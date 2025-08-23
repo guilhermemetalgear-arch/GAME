@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Jogo de Pontos</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="wrap">
+    <header class="header">
+      <h1>🏆 Jogo de Pontos</h1>
+      <div class="record" id="record">Carregando recorde...</div>
+    </header>
+
+    <section class="card">
+      <div class="who">
+        <label>Jogador:</label>
+        <strong id="whoName">—</strong>
+        <button id="changeName" class="ghost">trocar nome</button>
+      </div>
+
+      <div class="score">
+        <span>Pontuação:</span>
+        <strong id="score">0</strong>
+      </div>
+
+      <div class="actions">
+        <button id="btnAdd">Clique em mim</button>
+        <button id="btnSend" class="success">Enviar pontuação</button>
+        <button id="btnReset" class="ghost">Zerar</button>
+      </div>
+
+      <p id="status" class="status"></p>
+    </section>
+
+    <section class="card tip">
+      <h2>Como funciona</h2>
+      <ul>
+        <li>Ao entrar, informe seu <strong>nome</strong>.</li>
+        <li>Cada clique soma <strong>+1 ponto</strong>.</li>
+        <li>Ao clicar em <em>Enviar pontuação</em>, salvamos no servidor.</li>
+        <li>O <strong>recorde</strong> mostra a maior pontuação salva e o nome do jogador.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
