@@ -65,6 +65,17 @@ h1 {
     margin-bottom: 5px;
 }
 
+.character-option h3 {
+    margin: 5px 0;
+    font-size: 1.2em;
+    color: #fff;
+}
+
+.character-option p {
+    margin: 0;
+    font-size: 0.9em;
+}
+
 #game-container {
     position: relative;
     display: none;
@@ -173,6 +184,10 @@ canvas {
 
     .character-option p {
         font-size: 0.8em;
+    }
+
+    .character-option h3 {
+        font-size: 1em;
     }
 
     .control-btn {
