@@ -250,24 +250,28 @@ document.addEventListener('DOMContentLoaded', () => {
     upBtn.addEventListener('mouseleave', () => keys['ArrowUp'] = false);
     upBtn.addEventListener('touchstart', (e) => { e.preventDefault(); keys['ArrowUp'] = true; });
     upBtn.addEventListener('touchend', () => keys['ArrowUp'] = false);
+    upBtn.addEventListener('touchcancel', () => keys['ArrowUp'] = false);
 
     downBtn.addEventListener('mousedown', () => keys['ArrowDown'] = true);
     downBtn.addEventListener('mouseup', () => keys['ArrowDown'] = false);
     downBtn.addEventListener('mouseleave', () => keys['ArrowDown'] = false);
     downBtn.addEventListener('touchstart', (e) => { e.preventDefault(); keys['ArrowDown'] = true; });
     downBtn.addEventListener('touchend', () => keys['ArrowDown'] = false);
+    downBtn.addEventListener('touchcancel', () => keys['ArrowDown'] = false);
 
     leftBtn.addEventListener('mousedown', () => keys['ArrowLeft'] = true);
     leftBtn.addEventListener('mouseup', () => keys['ArrowLeft'] = false);
     leftBtn.addEventListener('mouseleave', () => keys['ArrowLeft'] = false);
     leftBtn.addEventListener('touchstart', (e) => { e.preventDefault(); keys['ArrowLeft'] = true; });
     leftBtn.addEventListener('touchend', () => keys['ArrowLeft'] = false);
+    leftBtn.addEventListener('touchcancel', () => keys['ArrowLeft'] = false);
 
     rightBtn.addEventListener('mousedown', () => keys['ArrowRight'] = true);
     rightBtn.addEventListener('mouseup', () => keys['ArrowRight'] = false);
     rightBtn.addEventListener('mouseleave', () => keys['ArrowRight'] = false);
     rightBtn.addEventListener('touchstart', (e) => { e.preventDefault(); keys['ArrowRight'] = true; });
     rightBtn.addEventListener('touchend', () => keys['ArrowRight'] = false);
+    rightBtn.addEventListener('touchcancel', () => keys['ArrowRight'] = false);
 
     controlRestartBtn.addEventListener('mousedown', () => resetGame());
     controlRestartBtn.addEventListener('touchstart', () => resetGame());
