@@ -13,12 +13,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const leftBtn = document.getElementById('left-btn');
     const rightBtn = document.getElementById('right-btn');
     const aBtn = document.getElementById('a-btn');
-    const controlRestartBtn = document = document.getElementById('control-restart-btn');
+    const controlRestartBtn = document.getElementById('control-restart-btn');
 
     // Variáveis globais para as habilidades dos personagens
     let selectedCharacterId = null;
     let extraLife = false;
     let enemyCount = 0; // Contador para controlar a ordem de spawn dos inimigos
+    let abilityUsed = false; // Adicionada variável para o Garoto Esperto
 
     // Função para redimensionar o canvas
     function resizeCanvas() {
@@ -104,12 +105,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Função para a habilidade do Personagem 3 (Garoto Esperto)
     function activateAbility() {
-        if (selectedCharacterId === 'character3') {
+        if (selectedCharacterId === 'character3' && !abilityUsed) {
             const range = 200; // Raio de ação para eliminar inimigos
             enemies = enemies.filter(enemy => {
                 const distance = Math.sqrt(Math.pow(player.x - enemy.x, 2) + Math.pow(player.y - enemy.y, 2));
                 return distance > range;
             });
+            abilityUsed = true; // Marca a habilidade como usada
         }
     }
 
@@ -149,6 +151,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         clearInterval(enemyInterval);
         enemyCount = 0; // Reseta o contador de inimigos para repetir o padrão
+        abilityUsed = false; // Reseta o uso da habilidade
     }
 
     restartButton.addEventListener('click', resetGame);
@@ -281,6 +284,12 @@ document.addEventListener('DOMContentLoaded', () => {
             ctx.fillText(status, 10, 60);
         }
         
+        // Exibe o status da habilidade do Garoto Esperto
+        if (selectedCharacterId === 'character3') {
+            const status = abilityUsed ? 'Habilidade: USADA' : 'Habilidade: DISPONÍVEL';
+            ctx.fillText(status, 10, 90);
+        }
+        
         if (gameOver) {
             ctx.fillStyle = '#e74c3c';
             ctx.font = '48px Arial';
@@ -314,6 +323,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else { // character3
                 player.speed = 5; // Velocidade padrão
                 extraLife = false;
+                abilityUsed = false; // Garante que a habilidade esteja disponível no início
             }
 
             characterSelectScreen.style.display = 'none';

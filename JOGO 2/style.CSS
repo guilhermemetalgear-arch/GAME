@@ -108,8 +108,8 @@ canvas {
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-top: 20px;
-    gap: 15px;
+    margin-top: 40px; /* Aumenta a distância dos botões da tela do jogo */
+    gap: 20px; /* Aumenta a distância entre os botões */
     z-index: 20;
     flex-wrap: wrap;
     width: 90%;
@@ -120,34 +120,46 @@ canvas {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 5px;
+    gap: 10px;
 }
 
 .d-pad-horizontal {
     display: flex;
-    gap: 5px;
+    gap: 10px;
 }
 
 .up-btn {
     align-self: center;
 }
 
-/* 150% do tamanho anterior de 120px = 180px */
+/* Alterações para o formato circular e cores */
 .control-btn {
-    width: 180px;
-    height: 180px;
-    font-size: 81px; /* 150% do tamanho anterior de 54px */
+    width: 120px;
+    height: 120px;
+    font-size: 54px;
     font-weight: bold;
-    background-color: #34495e;
     color: #fff;
     border: 2px solid #ecf0f1;
-    border-radius: 10px;
+    border-radius: 50%; /* Torna o botão circular */
     cursor: pointer;
     transition: background-color 0.2s ease;
 }
 
 .control-btn:active {
-    background-color: #5c748c;
+    filter: brightness(1.2); /* Efeito de brilho ao ser clicado */
+}
+
+/* Cores específicas para cada tipo de botão */
+#up-btn, #down-btn, #left-btn, #right-btn {
+    background-color: #3498db; /* Azul para os botões de movimento */
+}
+
+#a-btn {
+    background-color: #2ecc71; /* Verde para o botão de habilidade */
+}
+
+#control-restart-btn {
+    background-color: #e74c3c; /* Vermelho para o botão de reiniciar */
 }
 
 @media (max-width: 768px) {
@@ -163,11 +175,10 @@ canvas {
         font-size: 0.8em;
     }
 
-    /* 150% do tamanho anterior de 90px = 135px */
     .control-btn {
-        width: 135px;
-        height: 135px;
-        font-size: 54px; /* 150% do tamanho anterior de 36px */
+        width: 90px;
+        height: 90px;
+        font-size: 36px;
     }
 }
 
@@ -176,13 +187,14 @@ canvas {
         font-size: 1.2em;
         margin: 10px 0;
     }
-    /* 150% do tamanho anterior de 75px = 112.5px */
+
     .control-btn {
-        width: 112.5px;
-        height: 112.5px;
-        font-size: 45px; /* 150% do tamanho anterior de 30px */
+        width: 75px;
+        height: 75px;
+        font-size: 30px;
     }
+
     #controls {
-        gap: 10px;
+        gap: 15px;
     }
 }
