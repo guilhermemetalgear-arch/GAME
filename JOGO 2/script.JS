@@ -52,7 +52,6 @@ document.addEventListener('DOMContentLoaded', () => {
         keys[e.key] = false;
     });
 
-    // Função para resetar o jogo
     function resetGame() {
         gameOver = false;
         time = 0;
@@ -222,26 +221,34 @@ document.addEventListener('DOMContentLoaded', () => {
             playerImage.src = currentPlayerImageSrc;
             characterSelectScreen.style.display = 'none';
             gameContainer.style.display = 'block';
-            controls.style.display = 'flex'; // Exibe os controles de tela
+            controls.style.display = 'flex';
             
             startGame();
         });
     });
 
-    // Lógica para os botões de controle de tela
+    // Lógica para os botões de controle de tela (agora com suporte a mouse e toque)
     upBtn.addEventListener('mousedown', () => keys['ArrowUp'] = true);
     upBtn.addEventListener('mouseup', () => keys['ArrowUp'] = false);
-    upBtn.addEventListener('mouseleave', () => keys['ArrowUp'] = false); // Para parar o movimento se o mouse sair do botão
+    upBtn.addEventListener('mouseleave', () => keys['ArrowUp'] = false);
+    upBtn.addEventListener('touchstart', (e) => { e.preventDefault(); keys['ArrowUp'] = true; });
+    upBtn.addEventListener('touchend', () => keys['ArrowUp'] = false);
 
     downBtn.addEventListener('mousedown', () => keys['ArrowDown'] = true);
     downBtn.addEventListener('mouseup', () => keys['ArrowDown'] = false);
     downBtn.addEventListener('mouseleave', () => keys['ArrowDown'] = false);
+    downBtn.addEventListener('touchstart', (e) => { e.preventDefault(); keys['ArrowDown'] = true; });
+    downBtn.addEventListener('touchend', () => keys['ArrowDown'] = false);
 
     leftBtn.addEventListener('mousedown', () => keys['ArrowLeft'] = true);
     leftBtn.addEventListener('mouseup', () => keys['ArrowLeft'] = false);
     leftBtn.addEventListener('mouseleave', () => keys['ArrowLeft'] = false);
+    leftBtn.addEventListener('touchstart', (e) => { e.preventDefault(); keys['ArrowLeft'] = true; });
+    leftBtn.addEventListener('touchend', () => keys['ArrowLeft'] = false);
 
     rightBtn.addEventListener('mousedown', () => keys['ArrowRight'] = true);
     rightBtn.addEventListener('mouseup', () => keys['ArrowRight'] = false);
     rightBtn.addEventListener('mouseleave', () => keys['ArrowRight'] = false);
+    rightBtn.addEventListener('touchstart', (e) => { e.preventDefault(); keys['ArrowRight'] = true; });
+    rightBtn.addEventListener('touchend', () => keys['ArrowRight'] = false);
 });
