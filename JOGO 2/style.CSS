@@ -82,7 +82,7 @@ canvas {
     border: 2px solid #ecf0f1;
     max-width: 100%;
     max-height: 100%;
-    touch-action: none; /* Adicionado para evitar rolagem e zoom */
+    touch-action: none;
 }
 
 #restartButton {
@@ -132,10 +132,11 @@ canvas {
     align-self: center;
 }
 
+/* 150% do tamanho anterior de 120px = 180px */
 .control-btn {
-    width: 80px;
-    height: 80px;
-    font-size: 36px;
+    width: 180px;
+    height: 180px;
+    font-size: 81px; /* 150% do tamanho anterior de 54px */
     font-weight: bold;
     background-color: #34495e;
     color: #fff;
@@ -162,10 +163,11 @@ canvas {
         font-size: 0.8em;
     }
 
+    /* 150% do tamanho anterior de 90px = 135px */
     .control-btn {
-        width: 60px;
-        height: 60px;
-        font-size: 24px;
+        width: 135px;
+        height: 135px;
+        font-size: 54px; /* 150% do tamanho anterior de 36px */
     }
 }
 
@@ -174,10 +176,11 @@ canvas {
         font-size: 1.2em;
         margin: 10px 0;
     }
+    /* 150% do tamanho anterior de 75px = 112.5px */
     .control-btn {
-        width: 50px;
-        height: 50px;
-        font-size: 20px;
+        width: 112.5px;
+        height: 112.5px;
+        font-size: 45px; /* 150% do tamanho anterior de 30px */
     }
     #controls {
         gap: 10px;
