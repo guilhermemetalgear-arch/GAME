@@ -1,7 +1,7 @@
 body {
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
     height: 100vh;
     margin: 0;
@@ -13,10 +13,11 @@ body {
     
     color: #ecf0f1;
     font-family: Arial, sans-serif;
+    overflow: hidden;
 }
 
 h1 {
-    margin-bottom: 20px;
+    margin: 20px 0;
     color: #fff;
     font-size: 2.5em;
     text-shadow: 2px 2px 4px #000;
@@ -31,6 +32,8 @@ h1 {
     border-radius: 10px;
     color: #fff;
     z-index: 10;
+    max-width: 90%;
+    box-sizing: border-box;
 }
 
 #character-select-screen h2 {
@@ -50,6 +53,7 @@ h1 {
     background-color: rgba(52, 152, 219, 0.8);
     color: #fff;
     z-index: 11;
+    text-align: center;
 }
 
 .character-option:hover {
@@ -66,11 +70,19 @@ h1 {
     display: none;
     margin-top: 20px;
     background-color: rgba(52, 73, 94, 0.8);
+    max-width: 95vw;
+    max-height: 80vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 canvas {
     background-color: transparent;
     border: 2px solid #ecf0f1;
+    max-width: 100%;
+    max-height: 100%;
+    touch-action: none; /* Adicionado para evitar rolagem e zoom */
 }
 
 #restartButton {
@@ -98,7 +110,10 @@ canvas {
     align-items: center;
     margin-top: 20px;
     gap: 15px;
-    z-index: 20; /* Garantia de que os controles ficarão no topo */
+    z-index: 20;
+    flex-wrap: wrap;
+    width: 90%;
+    max-width: 600px;
 }
 
 .d-pad {
@@ -118,9 +133,9 @@ canvas {
 }
 
 .control-btn {
-    width: 100px;
-    height: 100px;
-    font-size: 48px;
+    width: 80px;
+    height: 80px;
+    font-size: 36px;
     font-weight: bold;
     background-color: #34495e;
     color: #fff;
@@ -132,4 +147,39 @@ canvas {
 
 .control-btn:active {
     background-color: #5c748c;
+}
+
+@media (max-width: 768px) {
+    h1 {
+        font-size: 1.5em;
+    }
+
+    #character-select-screen {
+        padding: 15px;
+    }
+
+    .character-option p {
+        font-size: 0.8em;
+    }
+
+    .control-btn {
+        width: 60px;
+        height: 60px;
+        font-size: 24px;
+    }
+}
+
+@media (max-width: 480px) {
+    h1 {
+        font-size: 1.2em;
+        margin: 10px 0;
+    }
+    .control-btn {
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
+    }
+    #controls {
+        gap: 10px;
+    }
 }

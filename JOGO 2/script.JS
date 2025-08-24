@@ -14,6 +14,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const rightBtn = document.getElementById('right-btn');
     const controlRestartBtn = document.getElementById('control-restart-btn');
 
+    // Função para redimensionar o canvas
+    function resizeCanvas() {
+        const gameContainerRect = gameContainer.getBoundingClientRect();
+        canvas.width = gameContainerRect.width;
+        canvas.height = gameContainerRect.height;
+    }
+
     // Aumenta o tamanho da tela
     canvas.width = 1000;
     canvas.height = 800;
@@ -26,11 +33,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // URLs para os diferentes tipos de inimigos (Pontos B)
     const enemyURLs = [
-        'https://i.postimg.cc/q7mjnRdc/PT-Brazil-logo-svg.png',  // B1
-        'https://i.postimg.cc/3rcYwcHc/blusinha.png',    // B2
-        'https://i.postimg.cc/bv92cjWM/3.jpg',       // B3 (ATUALIZADO)
-        'https://i.postimg.cc/Tw25T4XP/4.jpg',       // B4 (ATUALIZADO)
-        'https://i.postimg.cc/Y0h4WL0K/6.jpg',       // B5 (ATUALIZADO)
+        'https://i.postimg.cc/q7mjnRdc/PT-Brazil-logo-svg.png',
+        'https://i.postimg.cc/3rcYwcHc/blusinha.png',
+        'https://i.postimg.cc/bv92cjWM/3.jpg',
+        'https://i.postimg.cc/Tw25T4XP/4.jpg',
+        'https://i.postimg.cc/Y0h4WL0K/6.jpg',
         'URL_DA_IMAGEM_B6',
         'URL_DA_IMAGEM_B7',
         'URL_DA_IMAGEM_B8',
@@ -53,6 +60,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const keys = {};
     window.addEventListener('keydown', (e) => {
+        // Previne a rolagem da tela ao usar as teclas de movimento
+        if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'w', 'a', 's', 'd'].includes(e.key)) {
+            e.preventDefault();
+        }
+
         keys[e.key] = true;
 
         if (e.key === ' ') {
@@ -132,6 +144,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function startGame() {
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
         enemyInterval = setInterval(createEnemy, 1000);
         gameLoop();
     }
@@ -238,41 +252,42 @@ document.addEventListener('DOMContentLoaded', () => {
             currentPlayerImageSrc = this.dataset.image;
             playerImage.src = currentPlayerImageSrc;
             characterSelectScreen.style.display = 'none';
-            gameContainer.style.display = 'block';
+            gameContainer.style.display = 'flex';
             controls.style.display = 'flex';
             
             startGame();
         });
     });
 
+    // Eventos de toque para os botões, com e.preventDefault()
     upBtn.addEventListener('mousedown', () => keys['ArrowUp'] = true);
     upBtn.addEventListener('mouseup', () => keys['ArrowUp'] = false);
     upBtn.addEventListener('mouseleave', () => keys['ArrowUp'] = false);
     upBtn.addEventListener('touchstart', (e) => { e.preventDefault(); keys['ArrowUp'] = true; });
-    upBtn.addEventListener('touchend', () => keys['ArrowUp'] = false);
-    upBtn.addEventListener('touchcancel', () => keys['ArrowUp'] = false);
+    upBtn.addEventListener('touchend', (e) => { e.preventDefault(); keys['ArrowUp'] = false; });
+    upBtn.addEventListener('touchcancel', (e) => { e.preventDefault(); keys['ArrowUp'] = false; });
 
     downBtn.addEventListener('mousedown', () => keys['ArrowDown'] = true);
     downBtn.addEventListener('mouseup', () => keys['ArrowDown'] = false);
     downBtn.addEventListener('mouseleave', () => keys['ArrowDown'] = false);
     downBtn.addEventListener('touchstart', (e) => { e.preventDefault(); keys['ArrowDown'] = true; });
-    downBtn.addEventListener('touchend', () => keys['ArrowDown'] = false);
-    downBtn.addEventListener('touchcancel', () => keys['ArrowDown'] = false);
+    downBtn.addEventListener('touchend', (e) => { e.preventDefault(); keys['ArrowDown'] = false; });
+    downBtn.addEventListener('touchcancel', (e) => { e.preventDefault(); keys['ArrowDown'] = false; });
 
     leftBtn.addEventListener('mousedown', () => keys['ArrowLeft'] = true);
     leftBtn.addEventListener('mouseup', () => keys['ArrowLeft'] = false);
     leftBtn.addEventListener('mouseleave', () => keys['ArrowLeft'] = false);
     leftBtn.addEventListener('touchstart', (e) => { e.preventDefault(); keys['ArrowLeft'] = true; });
-    leftBtn.addEventListener('touchend', () => keys['ArrowLeft'] = false);
-    leftBtn.addEventListener('touchcancel', () => keys['ArrowLeft'] = false);
+    leftBtn.addEventListener('touchend', (e) => { e.preventDefault(); keys['ArrowLeft'] = false; });
+    leftBtn.addEventListener('touchcancel', (e) => { e.preventDefault(); keys['ArrowLeft'] = false; });
 
     rightBtn.addEventListener('mousedown', () => keys['ArrowRight'] = true);
     rightBtn.addEventListener('mouseup', () => keys['ArrowRight'] = false);
     rightBtn.addEventListener('mouseleave', () => keys['ArrowRight'] = false);
     rightBtn.addEventListener('touchstart', (e) => { e.preventDefault(); keys['ArrowRight'] = true; });
-    rightBtn.addEventListener('touchend', () => keys['ArrowRight'] = false);
-    rightBtn.addEventListener('touchcancel', () => keys['ArrowRight'] = false);
+    rightBtn.addEventListener('touchend', (e) => { e.preventDefault(); keys['ArrowRight'] = false; });
+    rightBtn.addEventListener('touchcancel', (e) => { e.preventDefault(); keys['ArrowRight'] = false; });
 
     controlRestartBtn.addEventListener('mousedown', () => resetGame());
-    controlRestartBtn.addEventListener('touchstart', () => resetGame());
+    controlRestartBtn.addEventListener('touchstart', (e) => { e.preventDefault(); resetGame(); });
 });
