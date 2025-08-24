@@ -1,4 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
+  
+  const bgMusic = document.getElementById('bg-music');
     const characterSelectScreen = document.getElementById('character-select-screen');
     const characterOptions = document.querySelectorAll('.character-option');
     const gameContainer = document.getElementById('game-container');
@@ -185,6 +187,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function startGame() {
+      
+      if (bgMusic) {
+    bgMusic.play().catch(err => {
+        console.log("Reprodução bloqueada até interação do usuário:", err);
+    });
+}
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
         enemyInterval = setInterval(createEnemy, 1000);
