@@ -1,40 +1,114 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ponto Fugitivo</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <h1>Ponto Fugitivo</h1>
-    <div id="character-select-screen">
-        <h2>Escolha seu Personagem</h2>
-        <div class="character-option" id="character1" data-image="https://i.postimg.cc/63yzhX9k/792-7927606-sad-meme-face-forever-alone-guy.jpg">
-            <img src="https://i.postimg.cc/63yzhX9k/792-7927606-sad-meme-face-forever-alone-guy.jpg" alt="Personagem 1" width="50" height="50">
-            <p>Ponto A1</p>
-        </div>
-        <div class="character-option" id="character2" data-image="https://i.postimg.cc/RVDJ1dx3/Pngtree-3d-delivery-man-red-scooter-14434092.png">
-            <img src="https://i.postimg.cc/RVDJ1dx3/Pngtree-3d-delivery-man-red-scooter-14434092.png" alt="Personagem 2" width="50" height="50">
-            <p>Ponto A2</p>
-        </div>
-        <div class="character-option" id="character3" data-image="https://i.postimg.cc/xT3nnTt9/PIVETE.jpg">
-            <img src="https://i.postimg.cc/xT3nnTt9/PIVETE.jpg" alt="Personagem 3" width="50" height="50">
-            <p>Ponto A3</p>
-        </div>
-    </div>
-    <div id="game-container">
-        <canvas id="gameCanvas"></canvas>
-        <button id="restartButton">Reiniciar Jogo</button>
-    </div>
-    <div id="controls" style="display: none;">
-        <button class="control-btn" id="up-btn">↑</button>
-        <div>
-            <button class="control-btn" id="left-btn">←</button>
-            <button class="control-btn" id="down-btn">↓</button>
-            <button class="control-btn" id="right-btn">→</button>
-        </div>
-    </div>
-    <script src="script.js"></script>
-</body>
-</html>
+body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-image: url('https://i.postimg.cc/CMCWfrDN/8f.jpg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    color: #ecf0f1;
+    font-family: Arial, sans-serif;
+}
+
+h1 {
+    margin-bottom: 20px;
+    color: #fff;
+}
+
+#character-select-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 30px;
+    border-radius: 10px;
+}
+
+#character-select-screen h2 {
+    margin-bottom: 20px;
+    color: #fff;
+}
+
+.character-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 10px;
+    padding: 15px;
+    border: 2px solid #3498db;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    background-color: rgba(52, 152, 219, 0.8);
+    color: #fff;
+}
+
+.character-option:hover {
+    background-color: #3498db;
+    color: #fff;
+}
+
+.character-option img {
+    margin-bottom: 5px;
+}
+
+#game-container {
+    position: relative;
+    display: none;
+    margin-top: 20px;
+}
+
+canvas {
+    background-color: #34495e;
+    border: 2px solid #ecf0f1;
+}
+
+#restartButton {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: #27ae60;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    
+    display: none;
+    z-index: 10;
+}
+
+/* Novas regras para os controles de tela */
+#controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 20px;
+}
+
+.control-btn {
+    width: 50px;
+    height: 50px;
+    font-size: 24px;
+    font-weight: bold;
+    background-color: #34495e;
+    color: #fff;
+    border: 2px solid #ecf0f1;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 5px;
+    transition: background-color 0.2s ease;
+}
+
+.control-btn:active {
+    background-color: #5c748c;
+}
+
+#controls div {
+    display: flex;
+}
