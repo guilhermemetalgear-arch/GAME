@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // URLs para os diferentes tipos de inimigos (Pontos B)
     const enemyURLs = [
-        'https://i.postimg.cc/q7mjnRdc/PT-Brazil-logo-svg.png',  // B1
+        'https://i.postimg.cc/hG3R7qvv/33.jpg',  // B1
         'https://i.postimg.cc/3rcYwcHc/blusinha.png',    // B2
         'https://i.postimg.cc/bv92cjWM/3.jpg',       // B3
         'https://i.postimg.cc/tgz7mQMg/Ovos-PNG-Transparente-Sem-Fundo.png', // B4
