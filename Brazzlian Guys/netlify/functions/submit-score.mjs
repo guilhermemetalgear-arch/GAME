@@ -8,19 +8,16 @@ const cors = {
   'Access-Control-Max-Age': '86400',
 };
 
-function res(statusCode, body) {
-  return {
-    statusCode,
-    headers: { 'Content-Type': 'application/json', ...cors },
-    body: JSON.stringify(body),
-  };
-}
+const json = (code, body) => ({
+  statusCode: code,
+  headers: { 'Content-Type': 'application/json', ...cors },
+  body: JSON.stringify(body),
+});
 
 function normalizeNumber(v) {
   if (typeof v === 'number') return v;
   if (typeof v === 'string') {
-    const trimmed = v.trim().replace(',', '.'); // "123,4" -> "123.4"
-    const n = Number(trimmed);
+    const n = Number(v.trim().replace(',', '.'));
     if (!Number.isNaN(n)) return n;
   }
   return undefined;
@@ -28,69 +25,39 @@ function normalizeNumber(v) {
 
 function parseBody(event) {
   const ct = (event.headers?.['content-type'] || event.headers?.['Content-Type'] || '').toLowerCase();
+  if (event.httpMethod === 'GET') return event.queryStringParameters || {};
 
-  // 1) JSON
   if (ct.includes('application/json')) {
-    try {
-      return JSON.parse(event.body || '{}');
-    } catch (e) {
-      console.error('[submit-score] JSON parse error:', e);
-      return {};
-    }
+    try { return JSON.parse(event.body || '{}'); } catch { return {}; }
   }
-
-  // 2) x-www-form-urlencoded
   if (ct.includes('application/x-www-form-urlencoded')) {
     const params = new URLSearchParams(event.body || '');
     return Object.fromEntries(params.entries());
   }
-
-  // 3) Fallback: tentar JSON, se falhar, vazio
-  try {
-    return JSON.parse(event.body || '{}');
-  } catch {
-    return {};
-  }
+  try { return JSON.parse(event.body || '{}'); } catch { return {}; }
 }
 
 export async function handler(event) {
-  if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 204, headers: cors };
+  if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers: cors };
+  if (!['POST','GET'].includes(event.httpMethod)) return json(405, { error: 'Method Not Allowed' });
+
+  // Env check
+  const { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY } = process.env;
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+    return json(500, { error: 'Ambiente sem SUPABASE_URL ou SUPABASE_SERVICE_ROLE_KEY' });
   }
+  const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false } });
 
-  // Permito GET para teste rápido via query string
-  if (!['POST', 'GET'].includes(event.httpMethod)) {
-    return res(405, { error: 'Method Not Allowed' });
-  }
+  const input = parseBody(event);
 
-  // Conferir envs (sem expor chaves)
-  const hasUrl = !!process.env.SUPABASE_URL;
-  const hasKey = !!process.env.SUPABASE_SERVICE_ROLE_KEY;
-  console.log('[submit-score] env', {
-    SUPABASE_URL: hasUrl ? 'ok' : 'missing',
-    SUPABASE_SERVICE_ROLE_KEY: hasKey ? 'ok' : 'missing',
-  });
-  if (!hasUrl || !hasKey) {
-    return res(500, { error: 'Ambiente sem SUPABASE_URL ou SUPABASE_SERVICE_ROLE_KEY' });
-  }
+  // ✅ Aliases aceitos agora:
+  // name, nome, player, jogador, userName, username, user_name
+  // points, score, pontuacao, pontos
+  const rawName =
+    input.name ?? input.nome ?? input.player ?? input.jogador ??
+    input.userName ?? input.username ?? input.user_name;
 
-  const supabase = createClient(
-    process.env.SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY,
-    { auth: { persistSession: false } }
-  );
-
-  // --- Captura parâmetros de várias formas ---
-  let input = {};
-  if (event.httpMethod === 'GET') {
-    input = event.queryStringParameters || {};
-  } else {
-    input = parseBody(event);
-  }
-
-  // Suporte a aliases comuns (name/nome, points/pontos/score)
-  const rawName = input.name ?? input.nome ?? input.player ?? input.jogador;
-  const rawPoints = input.points ?? input.pontos ?? input.score ?? input.pontuacao;
+  const rawPoints = input.points ?? input.score ?? input.pontuacao ?? input.pontos;
 
   const name = typeof rawName === 'string' ? rawName.trim() : undefined;
   const points = normalizeNumber(rawPoints);
@@ -102,34 +69,31 @@ export async function handler(event) {
       pointsParsedType: typeof points,
       method: event.httpMethod,
       contentType: event.headers?.['content-type'] || event.headers?.['Content-Type'],
-      bodyPreview: (event.body || '').slice(0, 120),
-      query: event.queryStringParameters,
+      bodyPreview: (event.body || '').slice(0, 200),
+      query: event.queryStringParameters || {}
     });
-
-    return res(400, {
-      error: 'Parâmetros inválidos. Envie { name: string, points: number }.',
-      received: { name, points },
-      hint: {
-        json: `fetch('/.netlify/functions/submit-score', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({name:'Jogador', points:123})})`,
-        form: `curl -X POST -H "Content-Type: application/x-www-form-urlencoded" -d "name=Jogador&points=123" "https://SEU-SITE.netlify.app/.netlify/functions/submit-score"`,
-        get: `GET /.netlify/functions/submit-score?name=Jogador&points=123 (apenas para teste)`,
-      },
+    return json(400, {
+      error: 'Parâmetros inválidos. Envie { userName/name: string, points: number }.',
+      received: { name, points }
     });
   }
 
-  // Inserir
-  console.log('[submit-score] inserting', { name, points });
+  // (Opcional) capture userId se vier
+  const user_id = input.userId ?? input.userid ?? input.user_id ?? null;
+
+  console.log('[submit-score] inserting', { name, points, user_id });
+
   const { data, error } = await supabase
-    .from('scores') // confirme o nome/schema da sua tabela
-    .insert([{ name, points }])
+    .from('scores')                       // confirme o nome e colunas
+    .insert([{ name, points, user_id }])  // tenha a coluna user_id (nullable) se quiser salvar
     .select('*')
     .single();
 
   if (error) {
     console.error('[submit-score] insert error', error);
-    return res(500, { error: error.message });
+    return json(500, { error: error.message });
   }
 
   console.log('[submit-score] inserted row', data);
-  return res(200, { ok: true, score: data });
+  return json(200, { ok: true, score: data });
 }
