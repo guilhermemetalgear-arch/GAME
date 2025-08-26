@@ -13,14 +13,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const leaderboardReload = document.getElementById('leaderboardReload');
   const leaderboardBack = document.getElementById('leaderboardBack');
 
-  // Patrocinadores (somente imagem)
-  const sponsor1File = document.getElementById('sponsor1File');
-  const sponsor2File = document.getElementById('sponsor2File');
-  const sponsor3File = document.getElementById('sponsor3File');
-  const sponsor1Img  = document.getElementById('sponsor1Img');
-  const sponsor2Img  = document.getElementById('sponsor2Img');
-  const sponsor3Img  = document.getElementById('sponsor3Img');
-  const dropZones = document.querySelectorAll('.sponsor-drop');
+  // Patrocinadores (por URL)
+  const sponsor1Url = document.getElementById('sponsor1Url');
+  const sponsor2Url = document.getElementById('sponsor2Url');
+  const sponsor3Url = document.getElementById('sponsor3Url');
+  const sponsor1Img = document.getElementById('sponsor1Img');
+  const sponsor2Img = document.getElementById('sponsor2Img');
+  const sponsor3Img = document.getElementById('sponsor3Img');
 
   // Elementos do jogo
   const canvas = document.getElementById('gameCanvas');
@@ -169,13 +168,15 @@ document.addEventListener('DOMContentLoaded', () => {
   leaderboardBack.addEventListener('click', showSelect);
 
   /* ========= Habilidade (Malandro) ========= */
+  // Fator 3x mais partículas (antes 36 → agora 108)
+  const PARTICLE_MULTIPLIER = 3;
 
-  // Cria um estouro de partículas "atrás" do jogador em todas as direções
   function spawnAbilityBurst() {
-    const N = 36;                 // número de partículas
-    const baseSpeed = 4;          // velocidade base
-    const spread = 2;             // variação aleatória
-    const maxLife = 35;           // vida em frames
+    const baseCount = 36;
+    const N = baseCount * PARTICLE_MULTIPLIER; // 108
+    const baseSpeed = 4;
+    const spread = 2;
+    const maxLife = 35;
     const cx = player.x + player.width / 2;
     const cy = player.y + player.height / 2;
 
@@ -187,7 +188,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const startY = cy - mvy * (player.height / 2 + 4);
 
     for (let i = 0; i < N; i++) {
-      const ang = (i / N) * Math.PI * 2;
+      // densidade mais aleatória para ficar “cheio”
+      const ang = (i / N) * Math.PI * 2 + (Math.random() - 0.5) * 0.2;
       const spd = baseSpeed + (Math.random() * spread - spread/2);
       const vx = Math.cos(ang) * spd;
       const vy = Math.sin(ang) * spd;
@@ -199,7 +201,7 @@ document.addEventListener('DOMContentLoaded', () => {
         vy,
         life: maxLife,
         maxLife,
-        size: 40, // tamanho inicial do sprite
+        size: 40,
       });
     }
   }
@@ -290,7 +292,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (dx !== 0 || dy !== 0) {
       const len = Math.hypot(dx, dy);
-      lastMove = { x: dx / len, y: dy / len }; // guarda última direção
+      lastMove = { x: dx / len, y: dy / len };
     }
 
     player.y += (dy * player.speed);
@@ -299,7 +301,7 @@ document.addEventListener('DOMContentLoaded', () => {
     player.x = Math.max(0, Math.min(canvas.width - player.width, player.x));
     player.y = Math.max(0, Math.min(canvas.height - player.height, player.y));
 
-    // Enemies
+    // Inimigos
     enemies.forEach(e => { e.x += e.dx; e.y += e.dy; });
 
     // Colisão
@@ -349,8 +351,7 @@ document.addEventListener('DOMContentLoaded', () => {
       ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
 
-    // === Partículas do poder (atrás do jogador) ===
-    // Desenhar antes do player para ficarem "atrás"
+    // Partículas do poder (atrás do jogador) — desenhar antes do player
     abilityParticles.forEach(p => {
       const t = p.life / p.maxLife;            // 1..0
       const size = 10 + p.size * t;            // decresce
@@ -359,10 +360,9 @@ document.addEventListener('DOMContentLoaded', () => {
       ctx.translate(p.x, p.y);
       ctx.rotate(angle);
       if (thunderImg.complete && thunderImg.naturalHeight !== 0) {
-        ctx.globalAlpha = Math.max(0.2, t);    // leve fade
+        ctx.globalAlpha = Math.max(0.2, t);
         ctx.drawImage(thunderImg, -size/2, -size/2, size, size);
       } else {
-        // fallback: círculo
         ctx.beginPath();
         ctx.arc(0, 0, size/2, 0, Math.PI*2);
         ctx.fillStyle = 'yellow';
@@ -506,33 +506,20 @@ document.addEventListener('DOMContentLoaded', () => {
   aBtn.addEventListener('mousedown', () => activateAbility());
   aBtn.addEventListener('touchstart', e => { e.preventDefault(); activateAbility(); });
 
-  /* ========= Patrocinadores: upload/drag&drop ========= */
-  function handleFile(file, imgEl, dropEl) {
-    if (!file || !file.type.startsWith('image/')) return;
-    const url = URL.createObjectURL(file);
-    imgEl.src = url;
-    imgEl.style.display = 'block';
-    dropEl.querySelector('.sponsor-hint').style.display = 'none';
-  }
+  /* ========= Patrocinadores: pré-visualização por URL ========= */
+  const onPreview = (input, img) => {
+    const url = (input.value || '').trim();
+    if (!url) { img.removeAttribute('src'); return; }
+    img.src = url;
+  };
+  sponsor1Url?.addEventListener('input', () => onPreview(sponsor1Url, sponsor1Img));
+  sponsor2Url?.addEventListener('input', () => onPreview(sponsor2Url, sponsor2Img));
+  sponsor3Url?.addEventListener('input', () => onPreview(sponsor3Url, sponsor3Img));
 
-  sponsor1File.addEventListener('change', (e) => handleFile(e.target.files?.[0], sponsor1Img, sponsor1File.parentElement));
-  sponsor2File.addEventListener('change', (e) => handleFile(e.target.files?.[0], sponsor2Img, sponsor2File.parentElement));
-  sponsor3File.addEventListener('change', (e) => handleFile(e.target.files?.[0], sponsor3Img, sponsor3File.parentElement));
-
-  dropZones.forEach(zone => {
-    zone.addEventListener('dragover', (e) => { e.preventDefault(); zone.classList.add('dragover'); });
-    zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
-    zone.addEventListener('drop', (e) => {
-      e.preventDefault();
-      zone.classList.remove('dragover');
-      const slot = zone.getAttribute('data-slot');
-      const file = e.dataTransfer?.files?.[0];
-      if (!file) return;
-      if (slot === '1') handleFile(file, sponsor1Img, zone);
-      if (slot === '2') handleFile(file, sponsor2Img, zone);
-      if (slot === '3') handleFile(file, sponsor3Img, zone);
-    });
-  });
+  // Inicia previews (campo 1 já vem preenchido)
+  onPreview(sponsor1Url, sponsor1Img);
+  onPreview(sponsor2Url, sponsor2Img);
+  onPreview(sponsor3Url, sponsor3Img);
 
   // Inicia na tela de seleção
   showSelect();

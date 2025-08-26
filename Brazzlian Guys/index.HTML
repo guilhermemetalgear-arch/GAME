@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body ontouchstart="">
-  <!-- Título (agora imagem) + Botão Ranking -->
+  <!-- Título (imagem) + Botão Ranking -->
   <div class="title-row">
     <img
       id="titleLogo"
@@ -46,33 +46,33 @@
     </div>
   </div>
 
-  <!-- SEÇÃO: Patrocinadores (somente imagem: upload/drag&drop) -->
+  <!-- SEÇÃO: Patrocinadores (por URL, com preview) -->
   <section id="sponsors-section" aria-label="Patrocinadores">
     <h2>Patrocinadores</h2>
     <div class="sponsors-grid">
-      <!-- Item 1 -->
+      <!-- Campo 1 - já preenchido -->
       <div class="sponsor-item">
-        <input type="file" id="sponsor1File" accept="image/*" hidden>
-        <label class="sponsor-drop" for="sponsor1File" data-slot="1">
-          <img id="sponsor1Img" alt="Patrocinador 1 (pré-visualização)">
-          <span class="sponsor-hint">Clique ou arraste a imagem do patrocinador aqui</span>
-        </label>
+        <label for="sponsor1Url">Imagem 1 (URL):</label>
+        <input type="url" id="sponsor1Url" value="https://i.postimg.cc/NMqJb8Mm/ali.jpg" placeholder="https://exemplo.com/logo1.png" />
+        <div class="sponsor-preview">
+          <img id="sponsor1Img" alt="Prévia do Patrocinador 1">
+        </div>
       </div>
-      <!-- Item 2 -->
+      <!-- Campo 2 -->
       <div class="sponsor-item">
-        <input type="file" id="sponsor2File" accept="image/*" hidden>
-        <label class="sponsor-drop" for="sponsor2File" data-slot="2">
-          <img id="sponsor2Img" alt="Patrocinador 2 (pré-visualização)">
-          <span class="sponsor-hint">Clique ou arraste a imagem do patrocinador aqui</span>
-        </label>
+        <label for="sponsor2Url">Imagem 2 (URL):</label>
+        <input type="url" id="sponsor2Url" placeholder="https://exemplo.com/logo2.png" />
+        <div class="sponsor-preview">
+          <img id="sponsor2Img" alt="Prévia do Patrocinador 2">
+        </div>
       </div>
-      <!-- Item 3 -->
+      <!-- Campo 3 -->
       <div class="sponsor-item">
-        <input type="file" id="sponsor3File" accept="image/*" hidden>
-        <label class="sponsor-drop" for="sponsor3File" data-slot="3">
-          <img id="sponsor3Img" alt="Patrocinador 3 (pré-visualização)">
-          <span class="sponsor-hint">Clique ou arraste a imagem do patrocinador aqui</span>
-        </label>
+        <label for="sponsor3Url">Imagem 3 (URL):</label>
+        <input type="url" id="sponsor3Url" placeholder="https://exemplo.com/logo3.png" />
+        <div class="sponsor-preview">
+          <img id="sponsor3Img" alt="Prévia do Patrocinador 3">
+        </div>
       </div>
     </div>
   </section>

@@ -2,26 +2,26 @@
 .title-row {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
   margin-top: 12px;
 }
 
-/* Logo do título */
+/* 3x maior (antes ~64px) → 192px */
 .title-logo {
-  height: 64px;
+  height: 192px;
   max-width: 70vw;
   object-fit: contain;
   filter: drop-shadow(2px 2px 4px rgba(0,0,0,.6));
 }
 
 #leaderboardButton {
-  padding: 10px 16px;
-  font-size: 14px;
+  padding: 12px 18px;
+  font-size: 16px;
   cursor: pointer;
   background-color: #8e44ad;
   color: #fff;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
 }
 #leaderboardButton:hover { filter: brightness(1.08); }
 
@@ -58,6 +58,10 @@ body {
   transform: scale(1.3);
   transform-origin: top center;
   margin-top: 8px;
+
+  /* Espaço extra abaixo para não sobrepor os patrocinadores
+     (o scale não aumenta a altura de layout) */
+  margin-bottom: clamp(80px, 12vh, 220px);
 }
 
 #character-select-screen h2 { 
@@ -85,13 +89,16 @@ body {
 .character-option h3 { margin: 5px 0; font-size: 1.2em; color: #fff; }
 .character-option p { margin: 0; font-size: 0.9em; }
 
-/* ====== Patrocinadores (somente imagem) ====== */
+/* ====== Patrocinadores (por URL) ====== */
 #sponsors-section {
   width: min(95vw, 980px);
-  margin-top: 18px;
+  /* empurra ainda mais para baixo caso a seleção esteja grande em telas pequenas */
+  margin-top: 24px;
   background: rgba(0, 0, 0, 0.55);
   padding: 16px;
   border-radius: 10px;
+  position: relative;
+  z-index: 5; /* não fica atrás da seleção */
 }
 #sponsors-section h2 {
   margin: 0 0 10px;
@@ -107,34 +114,35 @@ body {
   border-radius: 8px;
   padding: 12px;
   display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
-.sponsor-drop {
-  position: relative;
+.sponsor-item label {
+  font-size: 0.95em;
+}
+.sponsor-item input[type="url"] {
   width: 100%;
-  height: 120px;
-  border: 2px dashed #566573;
-  border-radius: 8px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid #566573;
+  background: #1c2833;
+  color: #ecf0f1;
+}
+.sponsor-preview {
+  margin-top: 6px;
   background: #17202a;
-  display: grid;
-  place-items: center;
+  border: 1px dashed #566573;
+  border-radius: 6px;
+  height: 110px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   overflow: hidden;
-  cursor: pointer;
 }
-.sponsor-drop.dragover {
-  border-color: #8e44ad;
-  box-shadow: 0 0 0 2px rgba(142, 68, 173, 0.35) inset;
-}
-.sponsor-drop img {
+.sponsor-preview img {
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
-  display: none;
-}
-.sponsor-hint {
-  color: #bdc3c7;
-  font-size: 0.9em;
-  text-align: center;
-  padding: 0 8px;
 }
 
 /* ====== Ranking interno ====== */
@@ -207,17 +215,17 @@ canvas {
 #control-restart-btn { background-color: #e74c3c; }
 
 @media (max-width: 900px) {
-  #character-select-screen { transform: scale(1.15); }
+  .title-logo { height: 160px; }
+  #character-select-screen { transform: scale(1.15); margin-bottom: clamp(60px, 10vh, 180px); }
   .sponsors-grid { grid-template-columns: 1fr; }
-  .title-logo { height: 56px; }
 }
 @media (max-width: 768px) {
-  .title-logo { height: 48px; }
+  .title-logo { height: 128px; }
   #character-select-screen { padding: 18px; }
   .control-btn { width: 90px; height: 90px; font-size: 36px; }
 }
 @media (max-width: 480px) {
-  .title-logo { height: 42px; }
+  .title-logo { height: 96px; }
   .control-btn { width: 75px; height: 75px; font-size: 30px; }
   #controls { gap: 15px; }
 }
