@@ -9,7 +9,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const restartButton = document.getElementById('restartButton');
     const controls = document.getElementById('controls');
 
-    // Referências para os novos botões de controle
     const upBtn = document.getElementById('up-btn');
     const downBtn = document.getElementById('down-btn');
     const leftBtn = document.getElementById('left-btn');
@@ -17,21 +16,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const aBtn = document.getElementById('a-btn');
     const controlRestartBtn = document.getElementById('control-restart-btn');
 
-    // Variáveis globais para as habilidades dos personagens
     let selectedCharacterId = null;
     let extraLife = false;
-    let enemyCount = 0; // Contador para controlar a ordem de spawn dos inimigos
-    let abilityUsed = false; // Adicionada variável para o Garoto Esperto
-    let score = 0; // Variável para a pontuação do jogo
+    let enemyCount = 0;
+    let abilityUsed = false;
+    let score = 0;
 
-    // Função para redimensionar o canvas
+    // NOVO: Variáveis globais para o jogador
+    let userName = null;
+    let userId = null;
+
     function resizeCanvas() {
         const gameContainerRect = gameContainer.getBoundingClientRect();
         canvas.width = gameContainerRect.width;
         canvas.height = gameContainer.getBoundingClientRect().height;
     }
 
-    // Aumenta o tamanho da tela
     canvas.width = 1000;
     canvas.height = 800;
 
@@ -41,13 +41,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const playerImage = new Image();
     let currentPlayerImageSrc = '';
 
-    // URLs para os diferentes tipos de inimigos (Pontos B)
     const enemyURLs = [
-        'https://i.postimg.cc/hG3R7qvv/33.jpg',  // B1
-        'https://i.postimg.cc/3rcYwcHc/blusinha.png',    // B2
-        'https://i.postimg.cc/bv92cjWM/3.jpg',       // B3
-        'https://i.postimg.cc/tgz7mQMg/Ovos-PNG-Transparente-Sem-Fundo.png', // B4
-        'https://i.postimg.cc/Y0h4WL0K/6.jpg',       // B5
+        'https://i.postimg.cc/hG3R7qvv/33.jpg',
+        'https://i.postimg.cc/3rcYwcHc/blusinha.png',
+        'https://i.postimg.cc/bv92cjWM/3.jpg',
+        'https://i.postimg.cc/tgz7mQMg/Ovos-PNG-Transparente-Sem-Fundo.png',
+        'https://i.postimg.cc/Y0h4WL0K/6.jpg',
         'URL_DA_IMAGEM_B6',
         'URL_DA_IMAGEM_B7',
         'URL_DA_IMAGEM_B8',
@@ -55,19 +54,12 @@ document.addEventListener('DOMContentLoaded', () => {
         'URL_DA_IMAGEM_B10'
     ];
 
-    // Padrões de movimento para cada inimigo
     const movementPatterns = [
-        // Padrão para B1: movimento da esquerda para a direita
         { dx: 2, dy: 0 },
-        // Padrão para B2: movimento de cima para baixo
         { dx: 0, dy: 2 },
-        // Padrão para B3: movimento diagonal
         { dx: 1.5, dy: 1.5 },
-        // Padrão para B4: movimento horizontal rápido
         { dx: 3, dy: 0 },
-        // Padrão para B5: movimento em ziguezague
         { dx: 1, dy: -2 },
-        // Padrões de exemplo para os demais B
         { dx: -1.5, dy: 1.5 },
         { dx: 2.5, dy: -1 },
         { dx: -2, dy: -2 },
@@ -75,20 +67,17 @@ document.addEventListener('DOMContentLoaded', () => {
         { dx: -3, dy: 0 }
     ];
 
-    // Define a sequência de inimigos para o jogo.
-    // Cada objeto define o tipo de inimigo (`typeIndex`), a posição de partida (`startX`, `startY`) e o lado de onde ele virá (`side`).
     const spawnWaves = [
-        // O `side` agora serve apenas como referência visual no código, mas a posição é fixa.
-        { typeIndex: 0, side: 0, startX: 0, startY: 300 }, // B1 da esquerda, no meio da altura
-        { typeIndex: 5, side: 1, startX: 1000, startY: 500 }, // B6 da direita
-        { typeIndex: 7, side: 2, startX: 400, startY: 800 }, // B8 de baixo
-        { typeIndex: 8, side: 3, startX: 0, startY: 100 }, // B9 da esquerda
-        { typeIndex: 9, side: 0, startX: 500, startY: 0 }, // B10 de cima
-        { typeIndex: 1, side: 1, startX: 1000, startY: 200 }, // B2 da direita
-        { typeIndex: 2, side: 2, startX: 250, startY: 800 }, // B3 de baixo
-        { typeIndex: 3, side: 3, startX: 0, startY: 600 }, // B4 da esquerda
-        { typeIndex: 4, side: 0, startX: 750, startY: 0 }, // B5 de cima
-        { typeIndex: 6, side: 1, startX: 1000, startY: 450 }, // B7 da direita
+        { typeIndex: 0, side: 0, startX: 0, startY: 300 },
+        { typeIndex: 5, side: 1, startX: 1000, startY: 500 },
+        { typeIndex: 7, side: 2, startX: 400, startY: 800 },
+        { typeIndex: 8, side: 3, startX: 0, startY: 100 },
+        { typeIndex: 9, side: 0, startX: 500, startY: 0 },
+        { typeIndex: 1, side: 1, startX: 1000, startY: 200 },
+        { typeIndex: 2, side: 2, startX: 250, startY: 800 },
+        { typeIndex: 3, side: 3, startX: 0, startY: 600 },
+        { typeIndex: 4, side: 0, startX: 750, startY: 0 },
+        { typeIndex: 6, side: 1, startX: 1000, startY: 450 },
     ];
 
     let player = {
@@ -106,19 +95,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const keys = {};
 
-    // Função para a habilidade do Personagem 3 (Garoto Esperto)
     function activateAbility() {
         if (selectedCharacterId === 'character3' && !abilityUsed) {
-            const range = 200; // Raio de ação para eliminar inimigos
+            const range = 200;
             enemies = enemies.filter(enemy => {
                 const distance = Math.sqrt(Math.pow(player.x - enemy.x, 2) + Math.pow(player.y - enemy.y, 2));
                 return distance > range;
             });
-            abilityUsed = true; // Marca a habilidade como usada
+            abilityUsed = true;
         }
     }
 
-    // Limpa o estado de movimento para evitar o bug de movimento automático
     function resetMovementState() {
         keys['ArrowUp'] = false;
         keys['ArrowDown'] = false;
@@ -131,18 +118,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     window.addEventListener('keydown', (e) => {
-        // Previne a rolagem da tela ao usar as teclas de movimento
         if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'w', 'a', 's', 'd'].includes(e.key)) {
             e.preventDefault();
         }
-
-        // Habilidade do Garoto Esperto: remover inimigos próximos ao apertar 'A'
         if (e.key.toLowerCase() === 'a') {
             activateAbility();
         }
-
         keys[e.key] = true;
-
         if (e.key === ' ') {
             resetGame();
         }
@@ -152,22 +134,17 @@ document.addEventListener('DOMContentLoaded', () => {
         keys[e.key] = false;
     });
 
-    // Função para salvar a pontuação no Supabase
     async function saveScoreToSupabase(userId, userName, points) {
         try {
             const response = await fetch('/.netlify/functions/submit-score', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ userId, userName, points }),
             });
-
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(errorData.body || 'Failed to save score');
             }
-
             const data = await response.json();
             console.log('Score saved successfully:', data);
         } catch (error) {
@@ -175,24 +152,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Função para terminar o jogo e salvar a pontuação
     function endGame() {
         if (gameOver) return;
-
         gameOver = true;
         clearInterval(enemyInterval);
-
-        // Calcular pontuação final (tempo em segundos)
         const finalScore = Math.floor(time / 60);
 
-        // Pede o nome do jogador
-        const userName = prompt('Fim de Jogo! Digite seu nome para salvar a pontuação:') || 'Anônimo';
-        const userId = Date.now().toString(); // ID de usuário simples, pois não há login
-
-        // Salva a pontuação
+        // Agora usa o nome informado no INÍCIO
         saveScoreToSupabase(userId, userName, finalScore);
 
-        // Mostra o botão de reiniciar
         restartButton.style.display = 'block';
     }
 
@@ -203,15 +171,13 @@ document.addEventListener('DOMContentLoaded', () => {
         player.x = canvas.width / 2 - 49;
         player.y = canvas.height / 2 - 49;
         restartButton.style.display = 'none';
-
         gameContainer.style.display = 'none';
         characterSelectScreen.style.display = 'flex';
         controls.style.display = 'none';
-
         clearInterval(enemyInterval);
-        enemyCount = 0; // Reseta o contador de inimigos para repetir o padrão
-        abilityUsed = false; // Reseta o uso da habilidade
-        resetMovementState(); // Limpa o estado de movimento
+        enemyCount = 0;
+        abilityUsed = false;
+        resetMovementState();
     }
 
     restartButton.addEventListener('click', resetGame);
@@ -219,16 +185,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function createEnemy() {
         if (gameOver) return;
-
-        // Pega o próximo objeto de onda de spawn da sequência
         const wave = spawnWaves[enemyCount % spawnWaves.length];
         const index = wave.typeIndex;
-
         const enemySize = 40 * 1.6;
-
         const pattern = movementPatterns[index];
         const enemyURL = enemyURLs[index];
-
         const enemyImage = new Image();
         enemyImage.src = enemyURL;
 
@@ -242,11 +203,10 @@ document.addEventListener('DOMContentLoaded', () => {
             image: enemyImage
         });
 
-        enemyCount++; // Incrementa o contador para o próximo inimigo
+        enemyCount++;
     }
 
     function startGame() {
-
         if (bgMusic) {
             bgMusic.play().catch(err => {
                 console.log("Reprodução bloqueada até interação do usuário:", err);
@@ -260,19 +220,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function update() {
         if (gameOver) return;
-
-        if (keys['ArrowUp'] || keys['w']) {
-            player.y -= player.speed;
-        }
-        if (keys['ArrowDown'] || keys['s']) {
-            player.y += player.speed;
-        }
-        if (keys['ArrowLeft'] || keys['a']) {
-            player.x -= player.speed;
-        }
-        if (keys['ArrowRight'] || keys['d']) {
-            player.x += player.speed;
-        }
+        if (keys['ArrowUp'] || keys['w']) player.y -= player.speed;
+        if (keys['ArrowDown'] || keys['s']) player.y += player.speed;
+        if (keys['ArrowLeft'] || keys['a']) player.x -= player.speed;
+        if (keys['ArrowRight'] || keys['d']) player.x += player.speed;
 
         player.x = Math.max(0, Math.min(canvas.width - player.width, player.x));
         player.y = Math.max(0, Math.min(canvas.height - player.height, player.y));
@@ -289,13 +240,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 player.y < enemy.y + enemy.height &&
                 player.y + player.height > enemy.y
             ) {
-                // Lógica de colisão
                 if (selectedCharacterId === 'character1' && extraLife) {
-                    extraLife = false; // Perde a vida extra
-                    // Remove o inimigo que causou a colisão
+                    extraLife = false;
                     enemies = enemies.filter(e => e !== enemy);
                 } else {
-                    endGame(); // Chama a função de fim de jogo
+                    endGame();
                 }
             }
         });
@@ -310,14 +259,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function draw() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-
         if (backgroundImage.complete && backgroundImage.naturalHeight !== 0) {
             ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
         } else {
             ctx.fillStyle = '#34495e';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
         }
-
         if (playerImage.complete && playerImage.naturalHeight !== 0) {
             ctx.drawImage(playerImage, player.x, player.y, player.width, player.height);
         } else {
@@ -327,7 +274,6 @@ document.addEventListener('DOMContentLoaded', () => {
             ctx.fill();
             ctx.closePath();
         }
-
         enemies.forEach(enemy => {
             if (enemy.image && enemy.image.complete && enemy.image.naturalHeight !== 0) {
                 ctx.drawImage(enemy.image, enemy.x, enemy.y, enemy.width, enemy.height);
@@ -339,23 +285,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 ctx.closePath();
             }
         });
-
         ctx.fillStyle = '#ecf0f1';
         ctx.font = '24px Arial';
         ctx.fillText(`Tempo: ${Math.floor(time / 60)}`, 10, 30);
 
-        // Exibe o status da vida extra do Garoto Inocente
         if (selectedCharacterId === 'character1') {
             const status = extraLife ? 'Vida Extra: ATIVA' : 'Vida Extra: INATIVA';
             ctx.fillText(status, 10, 60);
         }
-
-        // Exibe o status da habilidade do Garoto Esperto
         if (selectedCharacterId === 'character3') {
             const status = abilityUsed ? 'Habilidade: USADA' : 'Habilidade: DISPONÍVEL';
             ctx.fillText(status, 10, 90);
         }
-
         if (gameOver) {
             ctx.fillStyle = '#e74c3c';
             ctx.font = '48px Arial';
@@ -378,17 +319,22 @@ document.addEventListener('DOMContentLoaded', () => {
             currentPlayerImageSrc = this.dataset.image;
             playerImage.src = currentPlayerImageSrc;
 
-            // Ajusta as propriedades do jogador com base no personagem selecionado
             if (selectedCharacterId === 'character1') {
                 extraLife = true;
-                player.speed = 5; // Velocidade padrão
+                player.speed = 5;
             } else if (selectedCharacterId === 'character2') {
-                player.speed = 5 * 1.40; // Aumenta a velocidade em 40%
+                player.speed = 5 * 1.40;
                 extraLife = false;
-            } else { // character3
-                player.speed = 5; // Velocidade padrão
+            } else {
+                player.speed = 5;
                 extraLife = false;
-                abilityUsed = false; // Garante que a habilidade esteja disponível no início
+                abilityUsed = false;
+            }
+
+            // NOVO: Solicita nome apenas uma vez no início
+            if (!userName) {
+                userName = prompt('Digite seu nome para começar o jogo:') || 'Anônimo';
+                userId = Date.now().toString();
             }
 
             characterSelectScreen.style.display = 'none';
@@ -399,8 +345,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // --- REPARE QUE TODOS OS BOTÕES DE MOVIMENTO AGORA TÊM MOUSEUP/LEAVE E TOUCHEND/CANCEL ---
-    // Eventos de toque para os botões, com e.preventDefault()
+    // Botões de controle
     upBtn.addEventListener('mousedown', () => keys['ArrowUp'] = true);
     upBtn.addEventListener('mouseup', () => keys['ArrowUp'] = false);
     upBtn.addEventListener('mouseleave', () => keys['ArrowUp'] = false);
@@ -429,7 +374,6 @@ document.addEventListener('DOMContentLoaded', () => {
     rightBtn.addEventListener('touchend', (e) => { e.preventDefault(); keys['ArrowRight'] = false; });
     rightBtn.addEventListener('touchcancel', (e) => { e.preventDefault(); keys['ArrowRight'] = false; });
 
-    // Eventos para o novo botão 'A'
     aBtn.addEventListener('mousedown', () => activateAbility());
     aBtn.addEventListener('touchstart', (e) => { e.preventDefault(); activateAbility(); });
 
