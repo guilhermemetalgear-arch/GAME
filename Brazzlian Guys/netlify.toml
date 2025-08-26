@@ -1,0 +1,12 @@
+[build]
+  command = "npm install && npm run build"
+  functions = "netlify/functions"
+  publish = "."
+
+# (Opcional) CORS simples para tudo em dev
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Methods = "GET, POST, OPTIONS"
+    Access-Control-Allow-Headers = "Content-Type, Authorization"
