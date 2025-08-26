@@ -51,7 +51,7 @@ body {
   padding: 30px;
   border-radius: 10px;
   color: #fff;
-  z-index: 10;
+  z-index: 10; /* acima */
   max-width: 90%;
   box-sizing: border-box;
 
@@ -59,8 +59,7 @@ body {
   transform-origin: top center;
   margin-top: 8px;
 
-  /* Espaço extra abaixo para não sobrepor os patrocinadores
-     (o scale não aumenta a altura de layout) */
+  /* Garante espaço abaixo, já que o scale não muda a altura do layout */
   margin-bottom: clamp(80px, 12vh, 220px);
 }
 
@@ -89,16 +88,15 @@ body {
 .character-option h3 { margin: 5px 0; font-size: 1.2em; color: #fff; }
 .character-option p { margin: 0; font-size: 0.9em; }
 
-/* ====== Patrocinadores (por URL) ====== */
+/* ====== Patrocinadores (somente imagem definida no código) ====== */
 #sponsors-section {
   width: min(95vw, 980px);
-  /* empurra ainda mais para baixo caso a seleção esteja grande em telas pequenas */
-  margin-top: 24px;
+  margin-top: 24px;   /* afastado da seleção */
   background: rgba(0, 0, 0, 0.55);
   padding: 16px;
   border-radius: 10px;
   position: relative;
-  z-index: 5; /* não fica atrás da seleção */
+  z-index: 5; /* abaixo da seleção, mas não sobreposto */
 }
 #sponsors-section h2 {
   margin: 0 0 10px;
@@ -110,26 +108,12 @@ body {
   gap: 14px;
 }
 .sponsor-item {
+  display: none; /* JS mostra apenas quando há URL configurada */
   background: rgba(44, 62, 80, 0.85);
   border-radius: 8px;
   padding: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.sponsor-item label {
-  font-size: 0.95em;
-}
-.sponsor-item input[type="url"] {
-  width: 100%;
-  padding: 10px 12px;
-  border-radius: 6px;
-  border: 1px solid #566573;
-  background: #1c2833;
-  color: #ecf0f1;
 }
 .sponsor-preview {
-  margin-top: 6px;
   background: #17202a;
   border: 1px dashed #566573;
   border-radius: 6px;
@@ -143,6 +127,12 @@ body {
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
+}
+
+/* 🔒 Garantia extra: se algum input/label antigo estiver em cache, esconda */
+#sponsors-section input,
+#sponsors-section label {
+  display: none !important;
 }
 
 /* ====== Ranking interno ====== */

@@ -13,13 +13,30 @@ document.addEventListener('DOMContentLoaded', () => {
   const leaderboardReload = document.getElementById('leaderboardReload');
   const leaderboardBack = document.getElementById('leaderboardBack');
 
-  // Patrocinadores (por URL)
-  const sponsor1Url = document.getElementById('sponsor1Url');
-  const sponsor2Url = document.getElementById('sponsor2Url');
-  const sponsor3Url = document.getElementById('sponsor3Url');
-  const sponsor1Img = document.getElementById('sponsor1Img');
-  const sponsor2Img = document.getElementById('sponsor2Img');
-  const sponsor3Img = document.getElementById('sponsor3Img');
+  // === Patrocinadores (apenas URLs definidas no código) ===
+  // 1º já com a URL solicitada
+  const SPONSOR_URLS = [
+    'https://i.postimg.cc/NMqJb8Mm/ali.jpg', // Patrocinador 1
+    '',                                        // Patrocinador 2 (defina aqui)
+    ''                                         // Patrocinador 3 (defina aqui)
+  ];
+  const sponsorImgs = [
+    document.getElementById('sponsor1Img'),
+    document.getElementById('sponsor2Img'),
+    document.getElementById('sponsor3Img'),
+  ];
+  function initSponsors() {
+    sponsorImgs.forEach((img, idx) => {
+      const url = SPONSOR_URLS[idx];
+      const item = img.closest('.sponsor-item');
+      if (url) {
+        img.src = url;
+        item.style.display = 'block'; // mostra só quando há URL
+      } else {
+        item.style.display = 'none';
+      }
+    });
+  }
 
   // Elementos do jogo
   const canvas = document.getElementById('gameCanvas');
@@ -168,7 +185,7 @@ document.addEventListener('DOMContentLoaded', () => {
   leaderboardBack.addEventListener('click', showSelect);
 
   /* ========= Habilidade (Malandro) ========= */
-  // Fator 3x mais partículas (antes 36 → agora 108)
+  // 3× mais partículas
   const PARTICLE_MULTIPLIER = 3;
 
   function spawnAbilityBurst() {
@@ -188,7 +205,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const startY = cy - mvy * (player.height / 2 + 4);
 
     for (let i = 0; i < N; i++) {
-      // densidade mais aleatória para ficar “cheio”
       const ang = (i / N) * Math.PI * 2 + (Math.random() - 0.5) * 0.2;
       const spd = baseSpeed + (Math.random() * spread - spread/2);
       const vx = Math.cos(ang) * spd;
@@ -271,9 +287,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function startGame() {
-    if (bgMusic) {
-      bgMusic.play().catch(() => {});
-    }
+    if (bgMusic) { bgMusic.play().catch(() => {}); }
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
     enemyInterval = setInterval(createEnemy, 1000);
@@ -474,53 +488,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  /* ========= Controles mobile ========= */
-  upBtn.addEventListener('mousedown', () => keys['ArrowUp'] = true);
-  upBtn.addEventListener('mouseup', () => keys['ArrowUp'] = false);
-  upBtn.addEventListener('mouseleave', () => keys['ArrowUp'] = false);
-  upBtn.addEventListener('touchstart', e => { e.preventDefault(); keys['ArrowUp'] = true; });
-  upBtn.addEventListener('touchend', e => { e.preventDefault(); keys['ArrowUp'] = false; });
-  upBtn.addEventListener('touchcancel', e => { e.preventDefault(); keys['ArrowUp'] = false; });
-
-  downBtn.addEventListener('mousedown', () => keys['ArrowDown'] = true);
-  downBtn.addEventListener('mouseup', () => keys['ArrowDown'] = false);
-  downBtn.addEventListener('mouseleave', () => keys['ArrowDown'] = false);
-  downBtn.addEventListener('touchstart', e => { e.preventDefault(); keys['ArrowDown'] = true; });
-  downBtn.addEventListener('touchend', e => { e.preventDefault(); keys['ArrowDown'] = false; });
-  downBtn.addEventListener('touchcancel', e => { e.preventDefault(); keys['ArrowDown'] = false; });
-
-  leftBtn.addEventListener('mousedown', () => keys['ArrowLeft'] = true);
-  leftBtn.addEventListener('mouseup', () => keys['ArrowLeft'] = false);
-  leftBtn.addEventListener('mouseleave', () => keys['ArrowLeft'] = false);
-  leftBtn.addEventListener('touchstart', e => { e.preventDefault(); keys['ArrowLeft'] = true; });
-  leftBtn.addEventListener('touchend', e => { e.preventDefault(); keys['ArrowLeft'] = false; });
-  leftBtn.addEventListener('touchcancel', e => { e.preventDefault(); keys['ArrowLeft'] = false; });
-
-  rightBtn.addEventListener('mousedown', () => keys['ArrowRight'] = true);
-  rightBtn.addEventListener('mouseup', () => keys['ArrowRight'] = false);
-  rightBtn.addEventListener('mouseleave', () => keys['ArrowRight'] = false);
-  rightBtn.addEventListener('touchstart', e => { e.preventDefault(); keys['ArrowRight'] = true; });
-  rightBtn.addEventListener('touchend', e => { e.preventDefault(); keys['ArrowRight'] = false; });
-  rightBtn.addEventListener('touchcancel', e => { e.preventDefault(); keys['ArrowRight'] = false; });
-
-  aBtn.addEventListener('mousedown', () => activateAbility());
-  aBtn.addEventListener('touchstart', e => { e.preventDefault(); activateAbility(); });
-
-  /* ========= Patrocinadores: pré-visualização por URL ========= */
-  const onPreview = (input, img) => {
-    const url = (input.value || '').trim();
-    if (!url) { img.removeAttribute('src'); return; }
-    img.src = url;
-  };
-  sponsor1Url?.addEventListener('input', () => onPreview(sponsor1Url, sponsor1Img));
-  sponsor2Url?.addEventListener('input', () => onPreview(sponsor2Url, sponsor2Img));
-  sponsor3Url?.addEventListener('input', () => onPreview(sponsor3Url, sponsor3Img));
-
-  // Inicia previews (campo 1 já vem preenchido)
-  onPreview(sponsor1Url, sponsor1Img);
-  onPreview(sponsor2Url, sponsor2Img);
-  onPreview(sponsor3Url, sponsor3Img);
-
-  // Inicia na tela de seleção
+  /* ========= Iniciar ========= */
+  initSponsors();
   showSelect();
 });
