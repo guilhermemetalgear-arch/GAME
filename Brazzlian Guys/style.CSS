@@ -1,3 +1,31 @@
+/* Linha do título + botão Ranking */
+.title-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+h1 {
+    margin: 20px 0;
+    color: #fff;
+    font-size: 2.2em; /* levemente menor para caber com o botão */
+    text-shadow: 2px 2px 4px #000;
+}
+
+/* Botão Ranking (agora ao lado do título) */
+#leaderboardButton {
+    padding: 10px 16px;
+    font-size: 14px;
+    cursor: pointer;
+    background-color: #8e44ad;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+}
+#leaderboardButton:hover { filter: brightness(1.08); }
+
+/* ====== Estilos já existentes (mantidos) ====== */
 body {
     display: flex;
     flex-direction: column;
@@ -14,13 +42,6 @@ body {
     overflow: hidden;
 }
 
-h1 {
-    margin: 20px 0;
-    color: #fff;
-    font-size: 2.5em;
-    text-shadow: 2px 2px 4px #000;
-}
-
 #character-select-screen {
     display: flex;
     flex-direction: column;
@@ -34,9 +55,7 @@ h1 {
     box-sizing: border-box;
 }
 
-#character-select-screen h2 {
-    margin-bottom: 20px;
-}
+#character-select-screen h2 { margin-bottom: 20px; }
 
 .character-option {
     display: flex;
@@ -53,7 +72,6 @@ h1 {
     z-index: 11;
     text-align: center;
 }
-
 .character-option:hover { background-color: #3498db; color: #fff; }
 .character-option img { margin-bottom: 5px; }
 .character-option h3 { margin: 5px 0; font-size: 1.2em; color: #fff; }
@@ -81,72 +99,59 @@ canvas {
 
 #restartButton {
     position: absolute;
-    top: 50%;
-    left: 50%;
+    top: 50%; left: 50%;
     transform: translate(-50%, -50%);
-    padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
-    background-color: #27ae60;
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    display: none;
-    z-index: 10;
+    padding: 10px 20px; font-size: 16px; cursor: pointer;
+    background-color: #27ae60; color: #fff; border: none; border-radius: 5px;
+    display: none; z-index: 10;
 }
 
-/* NOVO: Botão Ranking (ao lado, no canto superior direito do game-container) */
-#leaderboardButton {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    padding: 10px 16px;
-    font-size: 14px;
-    cursor: pointer;
-    background-color: #8e44ad;
-    color: #fff;
-    border: none;
-    border-radius: 6px;
-    z-index: 11;
+/* ====== TELA: Ranking interno ====== */
+#leaderboard-screen {
+    display: none; /* controlado via JS */
+    margin-top: 20px;
+    width: min(92vw, 520px);
 }
-
-#leaderboardButton:hover { filter: brightness(1.08); }
-
-#controls {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-top: 40px;
-    gap: 20px;
-    z-index: 20;
-    flex-wrap: wrap;
-    width: 90%;
-    max-width: 600px;
+.leaderboard-card {
+    background: rgba(0, 0, 0, 0.7);
+    padding: 18px;
+    border-radius: 10px;
 }
+.leaderboard-card h2 { margin: 0 0 12px; }
+.leaderboard-list { background: #2c3e50; border-radius: 8px; padding: 8px 0; }
+.lb-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.lb-item:last-child { border-bottom: none; }
+.lb-pos { font-weight: bold; width: 40px; }
+.lb-name { flex: 1; padding: 0 8px; }
+.lb-score { width: 90px; text-align: right; }
+.muted { opacity: 0.8; }
 
+.leaderboard-actions {
+    margin-top: 12px; display: flex; gap: 10px; justify-content: flex-end;
+}
+.lb-reload, .lb-back {
+    padding: 10px 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;
+}
+.lb-reload { background: #8e44ad; color: #fff; }
+.lb-back { background: #27ae60; color: #fff; }
+
+/* ====== Controles mobile (mantidos) ====== */
+#controls { display: flex; justify-content: center; align-items: center; margin-top: 40px; gap: 20px; z-index: 20; flex-wrap: wrap; width: 90%; max-width: 600px; }
 .d-pad-keyboard { display: flex; flex-direction: column; align-items: center; gap: 10px; }
 .d-pad-horizontal { display: flex; gap: 10px; justify-content: center; }
 .action-buttons { display: flex; flex-direction: column; gap: 10px; }
 .up-btn { align-self: center; }
-
-.control-btn {
-    width: 120px;
-    height: 120px;
-    font-size: 54px;
-    font-weight: bold;
-    color: #fff;
-    border: 2px solid #ecf0f1;
-    border-radius: 50%;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-}
+.control-btn { width: 120px; height: 120px; font-size: 54px; font-weight: bold; color: #fff; border: 2px solid #ecf0f1; border-radius: 50%; cursor: pointer; transition: background-color 0.2s ease; }
 .control-btn:active { filter: brightness(1.2); }
 #up-btn, #down-btn, #left-btn, #right-btn { background-color: #3498db; }
 #a-btn { background-color: #2ecc71; }
 #control-restart-btn { background-color: #e74c3c; }
 
 @media (max-width: 768px) {
-    h1 { font-size: 1.5em; }
+    h1 { font-size: 1.6em; }
     #character-select-screen { padding: 15px; }
     .character-option p { font-size: 0.8em; }
     .character-option h3 { font-size: 1em; }
@@ -154,7 +159,7 @@ canvas {
 }
 
 @media (max-width: 480px) {
-    h1 { font-size: 1.2em; margin: 10px 0; }
+    h1 { font-size: 1.3em; margin: 10px 0; }
     .control-btn { width: 75px; height: 75px; font-size: 30px; }
     #controls { gap: 15px; }
 }

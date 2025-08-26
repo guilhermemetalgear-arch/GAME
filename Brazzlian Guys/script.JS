@@ -1,15 +1,24 @@
 document.addEventListener('DOMContentLoaded', () => {
     const bgMusic = document.getElementById('bg-music');
+
+    // Telas/containers
     const characterSelectScreen = document.getElementById('character-select-screen');
-    const characterOptions = document.querySelectorAll('.character-option');
+    const leaderboardScreen = document.getElementById('leaderboard-screen');
     const gameContainer = document.getElementById('game-container');
+    const controls = document.getElementById('controls');
+
+    // Ranking (novo)
+    const leaderboardButton = document.getElementById('leaderboardButton');
+    const leaderboardList = document.getElementById('leaderboard-list');
+    const leaderboardReload = document.getElementById('leaderboardReload');
+    const leaderboardBack = document.getElementById('leaderboardBack');
+
+    // Elementos do jogo
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     const restartButton = document.getElementById('restartButton');
-    const controls = document.getElementById('controls');
-    const leaderboardButton = document.getElementById('leaderboardButton'); // NOVO
 
-    // Botões de controle
+    // Botões de controle (mobile)
     const upBtn = document.getElementById('up-btn');
     const downBtn = document.getElementById('down-btn');
     const leftBtn = document.getElementById('left-btn');
@@ -17,32 +26,33 @@ document.addEventListener('DOMContentLoaded', () => {
     const aBtn = document.getElementById('a-btn');
     const controlRestartBtn = document.getElementById('control-restart-btn');
 
-    // Estado do jogo
+    // Personagens clicáveis
+    const characterOptions = document.querySelectorAll('.character-option');
+
+    // Estado geral
     let selectedCharacterId = null;
     let extraLife = false;
-    let enemyCount = 0;
     let abilityUsed = false;
-    let score = 0;
-    let userName = null;   // NOVO: guardado no início
-    let userId = null;     // NOVO: guardado no início
+    let enemyCount = 0;
+    let userName = null;   // pedido só no início
+    let userId = null;
 
-    // Tamanho inicial do canvas
+    // Canvas e assets
     function resizeCanvas() {
         const rect = gameContainer.getBoundingClientRect();
-        canvas.width = rect.width;
-        canvas.height = gameContainer.getBoundingClientRect().height;
+        canvas.width = rect.width || 1000;
+        canvas.height = gameContainer.getBoundingClientRect().height || 800;
     }
     canvas.width = 1000;
     canvas.height = 800;
 
-    // Imagens
     const backgroundImage = new Image();
     backgroundImage.src = 'https://i.postimg.cc/c19wL0CG/1-rocinha-favela-closeup.jpg';
 
     const playerImage = new Image();
     let currentPlayerImageSrc = '';
 
-    // URLs dos inimigos
+    // Inimigos (mesmos do seu jogo)
     const enemyURLs = [
         'https://i.postimg.cc/hG3R7qvv/33.jpg',
         'https://i.postimg.cc/3rcYwcHc/blusinha.png',
@@ -55,8 +65,6 @@ document.addEventListener('DOMContentLoaded', () => {
         'URL_DA_IMAGEM_B9',
         'URL_DA_IMAGEM_B10'
     ];
-
-    // Padrões de movimento
     const movementPatterns = [
         { dx: 2, dy: 0 },
         { dx: 0, dy: 2 },
@@ -69,8 +77,6 @@ document.addEventListener('DOMContentLoaded', () => {
         { dx: 3, dy: 3 },
         { dx: -3, dy: 0 }
     ];
-
-    // Sequência de spawn
     const spawnWaves = [
         { typeIndex: 0, side: 0, startX: 0, startY: 300 },
         { typeIndex: 5, side: 1, startX: 1000, startY: 500 },
@@ -84,49 +90,92 @@ document.addEventListener('DOMContentLoaded', () => {
         { typeIndex: 6, side: 1, startX: 1000, startY: 450 },
     ];
 
-    // Player
-    let player = {
-        x: canvas.width / 2 - 49,
-        y: canvas.height / 2 - 49,
-        width: 98,
-        height: 98,
-        speed: 5
-    };
-
+    // Player e jogo
+    let player = { x: canvas.width/2 - 49, y: canvas.height/2 - 49, width: 98, height: 98, speed: 5 };
     let enemies = [];
     let gameOver = false;
     let time = 0;
     let enemyInterval;
     const keys = {};
 
-    // Habilidade do "Malandro" (character3)
+    // ====== Fluxo de telas ======
+    function showSelect() {
+        leaderboardScreen.style.display = 'none';
+        gameContainer.style.display = 'none';
+        controls.style.display = 'none';
+        characterSelectScreen.style.display = 'flex';
+    }
+    function showGame() {
+        characterSelectScreen.style.display = 'none';
+        leaderboardScreen.style.display = 'none';
+        gameContainer.style.display = 'flex';
+        controls.style.display = 'flex';
+    }
+    function showLeaderboard() {
+        characterSelectScreen.style.display = 'none';
+        gameContainer.style.display = 'none';
+        controls.style.display = 'none';
+        leaderboardScreen.style.display = 'block';
+        loadTop3();
+    }
+
+    // ====== Ranking (Top 3 usando função Netlify) ======
+    async function loadTop3() {
+        leaderboardList.innerHTML = '<div class="lb-item muted">Carregando...</div>';
+        try {
+            const res = await fetch('/.netlify/functions/top-scores?limit=3');
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            const payload = await res.json();
+            const list = Array.isArray(payload?.data) ? payload.data : [];
+            if (list.length === 0) {
+                leaderboardList.innerHTML = '<div class="lb-item muted">Sem pontuações ainda.</div>';
+                return;
+            }
+            leaderboardList.innerHTML = list.slice(0, 3).map((row, i) => {
+                const name = row.user_name ?? row.name ?? 'Anônimo';
+                const pts  = typeof row.points === 'number' ? row.points : (row.score ?? 0);
+                return `
+                    <div class="lb-item">
+                        <div class="lb-pos">${i+1}º</div>
+                        <div class="lb-name">${name}</div>
+                        <div class="lb-score">${pts} pts</div>
+                    </div>`;
+            }).join('');
+        } catch (e) {
+            console.error(e);
+            leaderboardList.innerHTML = '<div class="lb-item muted">Não foi possível carregar o ranking agora.</div>';
+        }
+    }
+    leaderboardButton.addEventListener('click', showLeaderboard);
+    leaderboardReload.addEventListener('click', loadTop3);
+    leaderboardBack.addEventListener('click', showSelect);
+
+    // ====== Habilidade do Malandro ======
     function activateAbility() {
         if (selectedCharacterId === 'character3' && !abilityUsed) {
             const range = 200;
             enemies = enemies.filter(enemy => {
                 const dx = player.x - enemy.x;
                 const dy = player.y - enemy.y;
-                const distance = Math.sqrt(dx*dx + dy*dy);
-                return distance > range;
+                return Math.hypot(dx, dy) > range;
             });
             abilityUsed = true;
         }
     }
 
-    // Evita movimento travado
+    // ====== Movimento e controles ======
     function resetMovementState() {
-        for (const k of ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','w','a','s','d']) keys[k] = false;
+        ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','w','a','s','d'].forEach(k => keys[k] = false);
     }
-
     window.addEventListener('keydown', (e) => {
-        if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','w','a','s','d'].includes(e.key)) e.preventDefault();
+        if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','w','a','s','d',' '].includes(e.key)) e.preventDefault();
         if (e.key.toLowerCase() === 'a') activateAbility();
         keys[e.key] = true;
         if (e.key === ' ') resetGame();
     });
     window.addEventListener('keyup', (e) => { keys[e.key] = false; });
 
-    // Salvar pontuação via Netlify Function já existente
+    // ====== Persistência de pontuação ======
     async function saveScoreToSupabase(userId, userName, points) {
         try {
             const response = await fetch('/.netlify/functions/submit-score', {
@@ -135,179 +184,35 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify({ userId, userName, points }),
             });
             if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.body || 'Failed to save score');
+                const err = await response.json().catch(() => ({}));
+                throw new Error(err.body || 'Failed to save score');
             }
-            const data = await response.json();
-            console.log('Score saved successfully:', data);
+            await response.json();
         } catch (err) {
             console.error('Failed to save score:', err);
         }
     }
 
-    // NOVO: abrir janela com Top 3
-    function openLeaderboardWindow() {
-        const w = 460, h = 600;
-        const left = window.screenX + Math.max(0, (window.outerWidth - w - 24));
-        const top  = window.screenY + 80;
-        const lb = window.open('', 'leaderboard', `width=${w},height=${h},left=${left},top=${top}`);
-
-        if (!lb) {
-            alert('Bloqueador de pop-up ativo. Permita pop-ups para ver o Ranking.');
-            return;
-        }
-
-        // HTML básico da janela
-        lb.document.write(`
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Ranking - Top 3</title>
-<style>
-    body { font-family: Arial, sans-serif; background: #1e2530; color: #ecf0f1; margin: 0; padding: 20px; }
-    h1 { font-size: 20px; margin: 0 0 12px; }
-    .card { background: #2c3e50; border-radius: 10px; padding: 16px; margin-top: 12px; }
-    .item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.08); }
-    .item:last-child { border-bottom: none; }
-    .pos { font-weight: bold; width: 36px; }
-    .name { flex: 1; padding: 0 8px; }
-    .score { width: 70px; text-align: right; }
-    .actions { margin-top: 18px; display: flex; gap: 10px; }
-    button {
-        padding: 10px 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;
-    }
-    .reload { background: #8e44ad; color: #fff; }
-    .back { background: #27ae60; color: #fff; }
-    .muted { opacity: 0.8; }
-</style>
-</head>
-<body>
-    <h1>🏆 Top 3 Pontuações</h1>
-    <div class="card" id="board">
-        <div class="item muted">Carregando...</div>
-    </div>
-    <div class="actions">
-        <button class="reload" id="reload">Recarregar</button>
-        <button class="back" id="back">Voltar ao Menu</button>
-    </div>
-
-<script>
-    async function loadTop3() {
-        const board = document.getElementById('board');
-        board.innerHTML = '<div class="item muted">Carregando...</div>';
-        try {
-            const res = await fetch('/.netlify/functions/top-scores?limit=3', { method: 'GET' });
-            if (!res.ok) throw new Error('HTTP ' + res.status);
-            const payload = await res.json();
-            const list = Array.isArray(payload?.data) ? payload.data : [];
-            if (list.length === 0) {
-                board.innerHTML = '<div class="item muted">Sem pontuações ainda.</div>';
-                return;
-            }
-            board.innerHTML = list.slice(0,3).map((row, i) => {
-                const name = (row.user_name || row.userName || 'Anônimo');
-                const pts  = (row.points != null ? row.points : row.score || 0);
-                return \`
-                    <div class="item">
-                        <div class="pos">\${i+1}º</div>
-                        <div class="name">\${name}</div>
-                        <div class="score">\${pts} pts</div>
-                    </div>\`;
-            }).join('');
-        } catch (e) {
-            board.innerHTML = '<div class="item muted">Não foi possível carregar o ranking agora.</div>';
-            console.error('Falha no ranking:', e);
-        }
-    }
-
-    // Recarregar
-    document.getElementById('reload').addEventListener('click', loadTop3);
-
-    // Voltar ao menu (pede para a janela principal voltar ao menu e fecha)
-    document.getElementById('back').addEventListener('click', () => {
-        try { window.opener && window.opener.postMessage({ type: 'goToMenu' }, '*'); } catch {}
-        window.close();
-    });
-
-    // Carrega ao abrir
-    loadTop3();
-</script>
-</body>
-</html>
-        `);
-        lb.document.close();
-    }
-
-    // Recebe comando da janela do ranking para voltar ao menu
-    window.addEventListener('message', (evt) => {
-        if (!evt || !evt.data) return;
-        if (evt.data.type === 'goToMenu') {
-            resetGame(); // volta ao menu de escolha de personagem
-        }
-    });
-
-    // Fim de jogo
-    function endGame() {
-        if (gameOver) return;
-        gameOver = true;
-        clearInterval(enemyInterval);
-        const finalScore = Math.floor(time / 60);
-
-        // Usa nome capturado apenas no início
-        saveScoreToSupabase(userId, userName, finalScore);
-
-        restartButton.style.display = 'block';
-    }
-
-    // Reset geral (volta para seleção)
-    function resetGame() {
-        gameOver = false;
-        time = 0;
-        enemies = [];
-        player.x = canvas.width / 2 - 49;
-        player.y = canvas.height / 2 - 49;
-        restartButton.style.display = 'none';
-
-        gameContainer.style.display = 'none';
-        characterSelectScreen.style.display = 'flex';
-        controls.style.display = 'none';
-
-        clearInterval(enemyInterval);
-        enemyCount = 0;
-        abilityUsed = false;
-        resetMovementState();
-    }
-
-    restartButton.addEventListener('click', resetGame);
-    controlRestartBtn.addEventListener('click', resetGame);
-    leaderboardButton.addEventListener('click', openLeaderboardWindow); // NOVO
-
-    // Spawns
+    // ====== Game loop ======
     function createEnemy() {
         if (gameOver) return;
         const wave = spawnWaves[enemyCount % spawnWaves.length];
-        const index = wave.typeIndex;
-        const enemySize = 40 * 1.6;
-        const pattern = movementPatterns[index];
-        const enemyImage = new Image();
-        enemyImage.src = enemyURLs[index];
+        const enemySize = 64; // 40 * 1.6 (ajuste fino)
+        const img = new Image();
+        img.src = enemyURLs[wave.typeIndex];
         enemies.push({
-            x: wave.startX,
-            y: wave.startY,
-            width: enemySize,
-            height: enemySize,
-            dx: pattern.dx,
-            dy: pattern.dy,
-            image: enemyImage
+            x: wave.startX, y: wave.startY,
+            width: enemySize, height: enemySize,
+            dx: movementPatterns[wave.typeIndex].dx,
+            dy: movementPatterns[wave.typeIndex].dy,
+            image: img
         });
         enemyCount++;
     }
 
     function startGame() {
         if (bgMusic) {
-            bgMusic.play().catch(err => console.log("Reprodução bloqueada até interação do usuário:", err));
+            bgMusic.play().catch(() => {});
         }
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
@@ -326,9 +231,10 @@ document.addEventListener('DOMContentLoaded', () => {
         player.x = Math.max(0, Math.min(canvas.width - player.width, player.x));
         player.y = Math.max(0, Math.min(canvas.height - player.height, player.y));
 
-        enemies.forEach(enemy => { enemy.x += enemy.dx; enemy.y += enemy.dy; });
+        enemies.forEach(e => { e.x += e.dx; e.y += e.dy; });
 
-        enemies.forEach(enemy => {
+        // colisão
+        for (const enemy of enemies) {
             const collide = (
                 player.x < enemy.x + enemy.width &&
                 player.x + player.width > enemy.x &&
@@ -337,17 +243,19 @@ document.addEventListener('DOMContentLoaded', () => {
             );
             if (collide) {
                 if (selectedCharacterId === 'character1' && extraLife) {
-                    extraLife = false; // Piriguete perde a "vida extra" na primeira colisão
-                    enemies = enemies.filter(e => e !== enemy);
+                    extraLife = false; // Piriguete consome a vida extra
+                    enemies = enemies.filter(en => en !== enemy);
                 } else {
                     endGame();
                 }
+                break;
             }
-        });
+        }
 
-        enemies = enemies.filter(enemy =>
-            enemy.x > -enemy.width && enemy.x < canvas.width + enemy.width &&
-            enemy.y > -enemy.height && enemy.y < canvas.height + enemy.height
+        // limpa fora da tela
+        enemies = enemies.filter(e =>
+            e.x > -e.width && e.x < canvas.width + e.width &&
+            e.y > -e.height && e.y < canvas.height + e.height
         );
 
         time++;
@@ -367,21 +275,17 @@ document.addEventListener('DOMContentLoaded', () => {
             ctx.drawImage(playerImage, player.x, player.y, player.width, player.height);
         } else {
             ctx.beginPath();
-            ctx.arc(player.x + player.width / 2, player.y + player.height / 2, player.width / 2, 0, Math.PI * 2);
-            ctx.fillStyle = '#e74c3c';
-            ctx.fill();
-            ctx.closePath();
+            ctx.arc(player.x + player.width/2, player.y + player.height/2, player.width/2, 0, Math.PI*2);
+            ctx.fillStyle = '#e74c3c'; ctx.fill(); ctx.closePath();
         }
 
-        enemies.forEach(enemy => {
-            if (enemy.image && enemy.image.complete && enemy.image.naturalHeight !== 0) {
-                ctx.drawImage(enemy.image, enemy.x, enemy.y, enemy.width, enemy.height);
+        enemies.forEach(e => {
+            if (e.image && e.image.complete && e.image.naturalHeight !== 0) {
+                ctx.drawImage(e.image, e.x, e.y, e.width, e.height);
             } else {
                 ctx.beginPath();
-                ctx.arc(enemy.x + enemy.width / 2, enemy.y + enemy.height / 2, enemy.width / 2, 0, Math.PI * 2);
-                ctx.fillStyle = '#3498db';
-                ctx.fill();
-                ctx.closePath();
+                ctx.arc(e.x + e.width/2, e.y + e.height/2, e.width/2, 0, Math.PI*2);
+                ctx.fillStyle = '#3498db'; ctx.fill(); ctx.closePath();
             }
         });
 
@@ -390,19 +294,17 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.fillText(`Tempo: ${Math.floor(time / 60)}`, 10, 30);
 
         if (selectedCharacterId === 'character1') {
-            const status = extraLife ? 'Vida Extra: ATIVA' : 'Vida Extra: INATIVA';
-            ctx.fillText(status, 10, 60);
+            ctx.fillText(extraLife ? 'Vida Extra: ATIVA' : 'Vida Extra: INATIVA', 10, 60);
         }
         if (selectedCharacterId === 'character3') {
-            const status = abilityUsed ? 'Habilidade: USADA' : 'Habilidade: DISPONÍVEL';
-            ctx.fillText(status, 10, 90);
+            ctx.fillText(abilityUsed ? 'Habilidade: USADA' : 'Habilidade: DISPONÍVEL', 10, 90);
         }
 
         if (gameOver) {
             ctx.fillStyle = '#e74c3c';
             ctx.font = '48px Arial';
             ctx.textAlign = 'center';
-            ctx.fillText('Fim de Jogo!', canvas.width / 2, canvas.height / 2);
+            ctx.fillText('Fim de Jogo!', canvas.width/2, canvas.height/2);
         }
     }
 
@@ -412,23 +314,50 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!gameOver) requestAnimationFrame(gameLoop);
     }
 
-    // Clique nos personagens (nome solicitado só uma vez no início)
+    // ====== Fim/Reset ======
+    function endGame() {
+        if (gameOver) return;
+        gameOver = true;
+        clearInterval(enemyInterval);
+        const finalScore = Math.floor(time / 60);
+        saveScoreToSupabase(userId, userName, finalScore);
+        restartButton.style.display = 'block';
+    }
+
+    function resetGame() {
+        gameOver = false;
+        time = 0;
+        enemies = [];
+        player.x = canvas.width/2 - 49;
+        player.y = canvas.height/2 - 49;
+        restartButton.style.display = 'none';
+
+        gameContainer.style.display = 'none';
+        controls.style.display = 'none';
+        characterSelectScreen.style.display = 'flex';
+
+        clearInterval(enemyInterval);
+        enemyCount = 0;
+        abilityUsed = false;
+        ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','w','a','s','d'].forEach(k => keys[k] = false);
+    }
+
+    restartButton.addEventListener('click', resetGame);
+    controlRestartBtn.addEventListener('click', resetGame);
+
+    // ====== Seleção de personagem (nome solicitado só 1x) ======
     characterOptions.forEach(option => {
-        option.addEventListener('click', function () {
+        option.addEventListener('click', function() {
             selectedCharacterId = this.id;
             currentPlayerImageSrc = this.dataset.image;
             playerImage.src = currentPlayerImageSrc;
 
             if (selectedCharacterId === 'character1') { // Piriguete
-                extraLife = true;
-                player.speed = 5;
+                extraLife = true; player.speed = 5;
             } else if (selectedCharacterId === 'character2') { // Motoboy
-                player.speed = 5 * 1.40;
-                extraLife = false;
+                player.speed = 5 * 1.40; extraLife = false;
             } else { // Malandro
-                player.speed = 5;
-                extraLife = false;
-                abilityUsed = false;
+                player.speed = 5; extraLife = false; abilityUsed = false;
             }
 
             if (!userName) {
@@ -436,46 +365,43 @@ document.addEventListener('DOMContentLoaded', () => {
                 userId = Date.now().toString();
             }
 
-            characterSelectScreen.style.display = 'none';
-            gameContainer.style.display = 'flex';
-            controls.style.display = 'flex';
-
+            showGame();
             startGame();
         });
     });
 
-    // Controles na tela (toque/mouse)
+    // ====== Controles mobile ======
     upBtn.addEventListener('mousedown', () => keys['ArrowUp'] = true);
     upBtn.addEventListener('mouseup', () => keys['ArrowUp'] = false);
     upBtn.addEventListener('mouseleave', () => keys['ArrowUp'] = false);
-    upBtn.addEventListener('touchstart', (e) => { e.preventDefault(); keys['ArrowUp'] = true; });
-    upBtn.addEventListener('touchend', (e) => { e.preventDefault(); keys['ArrowUp'] = false; });
-    upBtn.addEventListener('touchcancel', (e) => { e.preventDefault(); keys['ArrowUp'] = false; });
+    upBtn.addEventListener('touchstart', e => { e.preventDefault(); keys['ArrowUp'] = true; });
+    upBtn.addEventListener('touchend', e => { e.preventDefault(); keys['ArrowUp'] = false; });
+    upBtn.addEventListener('touchcancel', e => { e.preventDefault(); keys['ArrowUp'] = false; });
 
     downBtn.addEventListener('mousedown', () => keys['ArrowDown'] = true);
     downBtn.addEventListener('mouseup', () => keys['ArrowDown'] = false);
     downBtn.addEventListener('mouseleave', () => keys['ArrowDown'] = false);
-    downBtn.addEventListener('touchstart', (e) => { e.preventDefault(); keys['ArrowDown'] = true; });
-    downBtn.addEventListener('touchend', (e) => { e.preventDefault(); keys['ArrowDown'] = false; });
-    downBtn.addEventListener('touchcancel', (e) => { e.preventDefault(); keys['ArrowDown'] = false; });
+    downBtn.addEventListener('touchstart', e => { e.preventDefault(); keys['ArrowDown'] = true; });
+    downBtn.addEventListener('touchend', e => { e.preventDefault(); keys['ArrowDown'] = false; });
+    downBtn.addEventListener('touchcancel', e => { e.preventDefault(); keys['ArrowDown'] = false; });
 
     leftBtn.addEventListener('mousedown', () => keys['ArrowLeft'] = true);
     leftBtn.addEventListener('mouseup', () => keys['ArrowLeft'] = false);
     leftBtn.addEventListener('mouseleave', () => keys['ArrowLeft'] = false);
-    leftBtn.addEventListener('touchstart', (e) => { e.preventDefault(); keys['ArrowLeft'] = true; });
-    leftBtn.addEventListener('touchend', (e) => { e.preventDefault(); keys['ArrowLeft'] = false; });
-    leftBtn.addEventListener('touchcancel', (e) => { e.preventDefault(); keys['ArrowLeft'] = false; });
+    leftBtn.addEventListener('touchstart', e => { e.preventDefault(); keys['ArrowLeft'] = true; });
+    leftBtn.addEventListener('touchend', e => { e.preventDefault(); keys['ArrowLeft'] = false; });
+    leftBtn.addEventListener('touchcancel', e => { e.preventDefault(); keys['ArrowLeft'] = false; });
 
     rightBtn.addEventListener('mousedown', () => keys['ArrowRight'] = true);
     rightBtn.addEventListener('mouseup', () => keys['ArrowRight'] = false);
     rightBtn.addEventListener('mouseleave', () => keys['ArrowRight'] = false);
-    rightBtn.addEventListener('touchstart', (e) => { e.preventDefault(); keys['ArrowRight'] = true; });
-    rightBtn.addEventListener('touchend', (e) => { e.preventDefault(); keys['ArrowRight'] = false; });
-    rightBtn.addEventListener('touchcancel', (e) => { e.preventDefault(); keys['ArrowRight'] = false; });
+    rightBtn.addEventListener('touchstart', e => { e.preventDefault(); keys['ArrowRight'] = true; });
+    rightBtn.addEventListener('touchend', e => { e.preventDefault(); keys['ArrowRight'] = false; });
+    rightBtn.addEventListener('touchcancel', e => { e.preventDefault(); keys['ArrowRight'] = false; });
 
     aBtn.addEventListener('mousedown', () => activateAbility());
-    aBtn.addEventListener('touchstart', (e) => { e.preventDefault(); activateAbility(); });
+    aBtn.addEventListener('touchstart', e => { e.preventDefault(); activateAbility(); });
 
-    controlRestartBtn.addEventListener('mousedown', () => resetGame());
-    controlRestartBtn.addEventListener('touchstart', (e) => { e.preventDefault(); resetGame(); });
+    // Inicia na tela de seleção
+    showSelect();
 });

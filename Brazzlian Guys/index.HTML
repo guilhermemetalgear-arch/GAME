@@ -7,25 +7,31 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body ontouchstart="">
-    <h1>BRAZILLIAN GUY - THE GAME</h1>
+    <!-- Título + Botão Ranking na mesma linha -->
+    <div class="title-row">
+        <h1>BRAZILLIAN GUY - THE GAME</h1>
+        <button id="leaderboardButton" title="Ver top 3 pontuações">Ranking</button>
+    </div>
 
+    <!-- TELA: Seleção de Personagem -->
     <div id="character-select-screen">
         <h2>Escolha seu Personagem</h2>
 
-        <!-- Personagem 1: agora "Piriguete" -->
+        <!-- Personagem 1: Piriguete -->
         <div class="character-option" id="character1" data-image="https://i.postimg.cc/63yzhX9k/792-7927606-sad-meme-face-forever-alone-guy.jpg">
             <img src="https://i.postimg.cc/63yzhX9k/792-7927606-sad-meme-face-forever-alone-guy.jpg" alt="Personagem 1" width="98" height="98">
             <h3>Piriguete</h3>
             <p>Resistência ao primeiro contato (chance extra)</p>
         </div>
 
+        <!-- Personagem 2: Motoboy -->
         <div class="character-option" id="character2" data-image="https://i.postimg.cc/W3bm57SQ/Pngtree-3d-delivery-man-red-scooter-14434092.png">
             <img src="https://i.postimg.cc/W3bm57SQ/Pngtree-3d-delivery-man-red-scooter-14434092.png" alt="Personagem 2" width="98" height="98">
             <h3>Motoboy</h3>
             <p>Velocidade de +40%</p>
         </div>
 
-        <!-- Personagem 3: agora "Malandro" -->
+        <!-- Personagem 3: Malandro -->
         <div class="character-option" id="character3" data-image="https://i.postimg.cc/zGRckx63/20250824-1543-Cheerful-Cartoon-Wave-simple-compose-01k3ep8xhjfje80vm60yp9h9x4.gif">
             <img src="https://i.postimg.cc/zGRckx63/20250824-1543-Cheerful-Cartoon-Wave-simple-compose-01k3ep8xhjfje80vm60yp9h9x4.gif" alt="Personagem 3" width="98" height="98">
             <h3>Malandro</h3>
@@ -33,16 +39,27 @@
         </div>
     </div>
 
-    <div id="game-container">
-        <canvas id="gameCanvas"></canvas>
-
-        <!-- Botão de Reiniciar (já existente) -->
-        <button id="restartButton">Reiniciar Jogo</button>
-
-        <!-- NOVO: Botão Ranking, “ao lado” do jogo -->
-        <button id="leaderboardButton" title="Ver top 3 pontuações">Ranking</button>
+    <!-- TELA: Ranking interno -->
+    <div id="leaderboard-screen" style="display:none;">
+        <div class="leaderboard-card">
+            <h2>🏆 Top 3 Pontuações</h2>
+            <div id="leaderboard-list" class="leaderboard-list">
+                <div class="lb-item muted">Carregando...</div>
+            </div>
+            <div class="leaderboard-actions">
+                <button id="leaderboardReload" class="lb-reload">Recarregar</button>
+                <button id="leaderboardBack" class="lb-back">Voltar ao Menu</button>
+            </div>
+        </div>
     </div>
 
+    <!-- TELA: Jogo -->
+    <div id="game-container">
+        <canvas id="gameCanvas"></canvas>
+        <button id="restartButton">Reiniciar Jogo</button>
+    </div>
+
+    <!-- Controles (mobile) -->
     <div id="controls" style="display: none;">
         <div class="d-pad-keyboard">
             <button class="control-btn" id="up-btn">▲</button>
