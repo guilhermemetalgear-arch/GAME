@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
-  
-  const bgMusic = document.getElementById('bg-music');
+
+    const bgMusic = document.getElementById('bg-music');
     const characterSelectScreen = document.getElementById('character-select-screen');
     const characterOptions = document.querySelectorAll('.character-option');
     const gameContainer = document.getElementById('game-container');
@@ -22,6 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let extraLife = false;
     let enemyCount = 0; // Contador para controlar a ordem de spawn dos inimigos
     let abilityUsed = false; // Adicionada variável para o Garoto Esperto
+    let score = 0; // Variável para a pontuação do jogo
 
     // Função para redimensionar o canvas
     function resizeCanvas() {
@@ -117,6 +118,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Limpa o estado de movimento para evitar o bug de movimento automático
+    function resetMovementState() {
+        keys['ArrowUp'] = false;
+        keys['ArrowDown'] = false;
+        keys['ArrowLeft'] = false;
+        keys['ArrowRight'] = false;
+        keys['w'] = false;
+        keys['s'] = false;
+        keys['a'] = false;
+        keys['d'] = false;
+    }
+
     window.addEventListener('keydown', (e) => {
         // Previne a rolagem da tela ao usar as teclas de movimento
         if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'w', 'a', 's', 'd'].includes(e.key)) {
@@ -139,6 +152,50 @@ document.addEventListener('DOMContentLoaded', () => {
         keys[e.key] = false;
     });
 
+    // Função para salvar a pontuação no Supabase
+    async function saveScoreToSupabase(userId, userName, points) {
+        try {
+            const response = await fetch('/.netlify/functions/submit-score', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ userId, userName, points }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.body || 'Failed to save score');
+            }
+
+            const data = await response.json();
+            console.log('Score saved successfully:', data);
+        } catch (error) {
+            console.error('Failed to save score:', error);
+        }
+    }
+
+    // Função para terminar o jogo e salvar a pontuação
+    function endGame() {
+        if (gameOver) return;
+
+        gameOver = true;
+        clearInterval(enemyInterval);
+
+        // Calcular pontuação final (tempo em segundos)
+        const finalScore = Math.floor(time / 60);
+
+        // Pede o nome do jogador
+        const userName = prompt('Fim de Jogo! Digite seu nome para salvar a pontuação:') || 'Anônimo';
+        const userId = Date.now().toString(); // ID de usuário simples, pois não há login
+
+        // Salva a pontuação
+        saveScoreToSupabase(userId, userName, finalScore);
+
+        // Mostra o botão de reiniciar
+        restartButton.style.display = 'block';
+    }
+
     function resetGame() {
         gameOver = false;
         time = 0;
@@ -146,27 +203,29 @@ document.addEventListener('DOMContentLoaded', () => {
         player.x = canvas.width / 2 - 49;
         player.y = canvas.height / 2 - 49;
         restartButton.style.display = 'none';
-        
+
         gameContainer.style.display = 'none';
         characterSelectScreen.style.display = 'flex';
         controls.style.display = 'none';
-        
+
         clearInterval(enemyInterval);
         enemyCount = 0; // Reseta o contador de inimigos para repetir o padrão
         abilityUsed = false; // Reseta o uso da habilidade
+        resetMovementState(); // Limpa o estado de movimento
     }
 
     restartButton.addEventListener('click', resetGame);
+    controlRestartBtn.addEventListener('click', resetGame);
 
     function createEnemy() {
         if (gameOver) return;
-        
+
         // Pega o próximo objeto de onda de spawn da sequência
         const wave = spawnWaves[enemyCount % spawnWaves.length];
         const index = wave.typeIndex;
 
         const enemySize = 40 * 1.6;
-        
+
         const pattern = movementPatterns[index];
         const enemyURL = enemyURLs[index];
 
@@ -182,17 +241,17 @@ document.addEventListener('DOMContentLoaded', () => {
             dy: pattern.dy,
             image: enemyImage
         });
-        
+
         enemyCount++; // Incrementa o contador para o próximo inimigo
     }
 
     function startGame() {
-      
-      if (bgMusic) {
-    bgMusic.play().catch(err => {
-        console.log("Reprodução bloqueada até interação do usuário:", err);
-    });
-}
+
+        if (bgMusic) {
+            bgMusic.play().catch(err => {
+                console.log("Reprodução bloqueada até interação do usuário:", err);
+            });
+        }
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
         enemyInterval = setInterval(createEnemy, 1000);
@@ -236,8 +295,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Remove o inimigo que causou a colisão
                     enemies = enemies.filter(e => e !== enemy);
                 } else {
-                    gameOver = true;
-                    clearInterval(enemyInterval);
+                    endGame(); // Chama a função de fim de jogo
                 }
             }
         });
@@ -291,19 +349,18 @@ document.addEventListener('DOMContentLoaded', () => {
             const status = extraLife ? 'Vida Extra: ATIVA' : 'Vida Extra: INATIVA';
             ctx.fillText(status, 10, 60);
         }
-        
+
         // Exibe o status da habilidade do Garoto Esperto
         if (selectedCharacterId === 'character3') {
             const status = abilityUsed ? 'Habilidade: USADA' : 'Habilidade: DISPONÍVEL';
             ctx.fillText(status, 10, 90);
         }
-        
+
         if (gameOver) {
             ctx.fillStyle = '#e74c3c';
             ctx.font = '48px Arial';
             ctx.textAlign = 'center';
             ctx.fillText('Fim de Jogo!', canvas.width / 2, canvas.height / 2);
-            restartButton.style.display = 'block';
         }
     }
 
@@ -337,11 +394,12 @@ document.addEventListener('DOMContentLoaded', () => {
             characterSelectScreen.style.display = 'none';
             gameContainer.style.display = 'flex';
             controls.style.display = 'flex';
-            
+
             startGame();
         });
     });
 
+    // --- REPARE QUE TODOS OS BOTÕES DE MOVIMENTO AGORA TÊM MOUSEUP/LEAVE E TOUCHEND/CANCEL ---
     // Eventos de toque para os botões, com e.preventDefault()
     upBtn.addEventListener('mousedown', () => keys['ArrowUp'] = true);
     upBtn.addEventListener('mouseup', () => keys['ArrowUp'] = false);
