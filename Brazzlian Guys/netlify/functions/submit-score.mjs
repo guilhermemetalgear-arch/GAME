@@ -1,4 +1,4 @@
-// netlify/functions/submit-score.mjs
+// netlify/functions/submit-score.mjs (ESM)
 import { createClient } from '@supabase/supabase-js';
 
 const cors = {
@@ -26,10 +26,7 @@ function normalizeNumber(v) {
 function parseBody(event) {
   const ct = (event.headers?.['content-type'] || event.headers?.['Content-Type'] || '').toLowerCase();
   if (event.httpMethod === 'GET') return event.queryStringParameters || {};
-
-  if (ct.includes('application/json')) {
-    try { return JSON.parse(event.body || '{}'); } catch { return {}; }
-  }
+  if (ct.includes('application/json')) { try { return JSON.parse(event.body || '{}'); } catch { return {}; } }
   if (ct.includes('application/x-www-form-urlencoded')) {
     const params = new URLSearchParams(event.body || '');
     return Object.fromEntries(params.entries());
@@ -41,7 +38,6 @@ export async function handler(event) {
   if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers: cors };
   if (!['POST','GET'].includes(event.httpMethod)) return json(405, { error: 'Method Not Allowed' });
 
-  // Env check
   const { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY } = process.env;
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
     return json(500, { error: 'Ambiente sem SUPABASE_URL ou SUPABASE_SERVICE_ROLE_KEY' });
@@ -50,9 +46,6 @@ export async function handler(event) {
 
   const input = parseBody(event);
 
-  // ✅ Aliases aceitos agora:
-  // name, nome, player, jogador, userName, username, user_name
-  // points, score, pontuacao, pontos
   const rawName =
     input.name ?? input.nome ?? input.player ?? input.jogador ??
     input.userName ?? input.username ?? input.user_name;
@@ -72,20 +65,17 @@ export async function handler(event) {
       bodyPreview: (event.body || '').slice(0, 200),
       query: event.queryStringParameters || {}
     });
-    return json(400, {
-      error: 'Parâmetros inválidos. Envie { userName/name: string, points: number }.',
-      received: { name, points }
-    });
+    return json(400, { error: 'Parâmetros inválidos. Envie { userName/name: string, points: number }.' });
   }
 
-  // (Opcional) capture userId se vier
-  const user_id = input.userId ?? input.userid ?? input.user_id ?? null;
+  // monta o objeto mínimo (sem user_id)
+  const row = { name, points };
 
-  console.log('[submit-score] inserting', { name, points, user_id });
+  console.log('[submit-score] inserting', row);
 
   const { data, error } = await supabase
-    .from('scores')                       // confirme o nome e colunas
-    .insert([{ name, points, user_id }])  // tenha a coluna user_id (nullable) se quiser salvar
+    .from('scores')     // confira nome/schema
+    .insert([row])
     .select('*')
     .single();
 
