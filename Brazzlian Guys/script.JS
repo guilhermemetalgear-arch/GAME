@@ -61,6 +61,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const playerImage = new Image();
   let currentPlayerImageSrc = '';
 
+  // Partículas da habilidade (Malandro)
+  const thunderImg = new Image();
+  thunderImg.src = 'https://i.postimg.cc/jSqr4b9t/Pngtree-thunder-and-bolt-flash-vector-4723241.png';
+
+  /** Partículas do efeito */
+  let abilityParticles = [];
+  /** Vetor de último movimento para saber o "atrás" do personagem */
+  let lastMove = { x: 1, y: 0 };
+
   // Inimigos
   const enemyURLs = [
     'https://i.postimg.cc/hG3R7qvv/33.jpg',
@@ -160,14 +169,54 @@ document.addEventListener('DOMContentLoaded', () => {
   leaderboardBack.addEventListener('click', showSelect);
 
   /* ========= Habilidade (Malandro) ========= */
+
+  // Cria um estouro de partículas "atrás" do jogador em todas as direções
+  function spawnAbilityBurst() {
+    const N = 36;                 // número de partículas
+    const baseSpeed = 4;          // velocidade base
+    const spread = 2;             // variação aleatória
+    const maxLife = 35;           // vida em frames
+    const cx = player.x + player.width / 2;
+    const cy = player.y + player.height / 2;
+
+    // origem atrás do jogador (centro - direção de movimento * raio)
+    let mvx = lastMove.x, mvy = lastMove.y;
+    const mvLen = Math.hypot(mvx, mvy) || 1;
+    mvx /= mvLen; mvy /= mvLen;
+    const startX = cx - mvx * (player.width / 2 + 4);
+    const startY = cy - mvy * (player.height / 2 + 4);
+
+    for (let i = 0; i < N; i++) {
+      const ang = (i / N) * Math.PI * 2;
+      const spd = baseSpeed + (Math.random() * spread - spread/2);
+      const vx = Math.cos(ang) * spd;
+      const vy = Math.sin(ang) * spd;
+
+      abilityParticles.push({
+        x: startX,
+        y: startY,
+        vx,
+        vy,
+        life: maxLife,
+        maxLife,
+        size: 40, // tamanho inicial do sprite
+      });
+    }
+  }
+
   function activateAbility() {
     if (selectedCharacterId === 'character3' && !abilityUsed) {
+      // Efeito visual
+      spawnAbilityBurst();
+
+      // Efeito de jogo (remover inimigos no raio)
       const range = 200;
       enemies = enemies.filter(enemy => {
         const dx = player.x - enemy.x;
         const dy = player.y - enemy.y;
         return Math.hypot(dx, dy) > range;
       });
+
       abilityUsed = true;
     }
   }
@@ -232,17 +281,28 @@ document.addEventListener('DOMContentLoaded', () => {
   function update() {
     if (gameOver) return;
 
-    if (keys['ArrowUp'] || keys['w']) player.y -= player.speed;
-    if (keys['ArrowDown'] || keys['s']) player.y += player.speed;
-    if (keys['ArrowLeft'] || keys['a']) player.x -= player.speed;
-    if (keys['ArrowRight'] || keys['d']) player.x += player.speed;
+    // Movimento
+    let dx = 0, dy = 0;
+    if (keys['ArrowUp'] || keys['w']) dy -= 1;
+    if (keys['ArrowDown'] || keys['s']) dy += 1;
+    if (keys['ArrowLeft'] || keys['a']) dx -= 1;
+    if (keys['ArrowRight'] || keys['d']) dx += 1;
+
+    if (dx !== 0 || dy !== 0) {
+      const len = Math.hypot(dx, dy);
+      lastMove = { x: dx / len, y: dy / len }; // guarda última direção
+    }
+
+    player.y += (dy * player.speed);
+    player.x += (dx * player.speed);
 
     player.x = Math.max(0, Math.min(canvas.width - player.width, player.x));
     player.y = Math.max(0, Math.min(canvas.height - player.height, player.y));
 
+    // Enemies
     enemies.forEach(e => { e.x += e.dx; e.y += e.dy; });
 
-    // colisão
+    // Colisão
     for (const enemy of enemies) {
       const collide = (
         player.x < enemy.x + enemy.width &&
@@ -261,11 +321,19 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    // limpa fora da tela
+    // Limpa fora da tela
     enemies = enemies.filter(e =>
       e.x > -e.width && e.x < canvas.width + e.width &&
       e.y > -e.height && e.y < canvas.height + e.height
     );
+
+    // Atualiza partículas
+    abilityParticles.forEach(p => {
+      p.x += p.vx;
+      p.y += p.vy;
+      p.life--;
+    });
+    abilityParticles = abilityParticles.filter(p => p.life > 0);
 
     time++;
   }
@@ -273,6 +341,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+    // Fundo
     if (backgroundImage.complete && backgroundImage.naturalHeight !== 0) {
       ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
     } else {
@@ -280,6 +349,29 @@ document.addEventListener('DOMContentLoaded', () => {
       ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
 
+    // === Partículas do poder (atrás do jogador) ===
+    // Desenhar antes do player para ficarem "atrás"
+    abilityParticles.forEach(p => {
+      const t = p.life / p.maxLife;            // 1..0
+      const size = 10 + p.size * t;            // decresce
+      const angle = Math.atan2(p.vy, p.vx);    // gira na direção
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(angle);
+      if (thunderImg.complete && thunderImg.naturalHeight !== 0) {
+        ctx.globalAlpha = Math.max(0.2, t);    // leve fade
+        ctx.drawImage(thunderImg, -size/2, -size/2, size, size);
+      } else {
+        // fallback: círculo
+        ctx.beginPath();
+        ctx.arc(0, 0, size/2, 0, Math.PI*2);
+        ctx.fillStyle = 'yellow';
+        ctx.fill();
+      }
+      ctx.restore();
+    });
+
+    // Player
     if (playerImage.complete && playerImage.naturalHeight !== 0) {
       ctx.drawImage(playerImage, player.x, player.y, player.width, player.height);
     } else {
@@ -288,6 +380,7 @@ document.addEventListener('DOMContentLoaded', () => {
       ctx.fillStyle = '#e74c3c'; ctx.fill(); ctx.closePath();
     }
 
+    // Inimigos
     enemies.forEach(e => {
       if (e.image && e.image.complete && e.image.naturalHeight !== 0) {
         ctx.drawImage(e.image, e.x, e.y, e.width, e.height);
@@ -298,6 +391,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
+    // HUD
     ctx.fillStyle = '#ecf0f1';
     ctx.font = '24px Arial';
     ctx.fillText(`Tempo: ${Math.floor(time / 60)}`, 10, 30);
@@ -337,6 +431,7 @@ document.addEventListener('DOMContentLoaded', () => {
     gameOver = false;
     time = 0;
     enemies = [];
+    abilityParticles = [];
     player.x = canvas.width/2 - 49;
     player.y = canvas.height/2 - 49;
     restartButton.style.display = 'none';

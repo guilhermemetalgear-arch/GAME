@@ -1,4 +1,4 @@
-/* ====== Título + botão Ranking ====== */
+/* ====== Título (imagem) + botão Ranking ====== */
 .title-row {
   display: flex;
   align-items: center;
@@ -6,11 +6,12 @@
   margin-top: 12px;
 }
 
-h1 {
-  margin: 20px 0;
-  color: #fff;
-  font-size: 2.2em;
-  text-shadow: 2px 2px 4px #000;
+/* Logo do título */
+.title-logo {
+  height: 64px;
+  max-width: 70vw;
+  object-fit: contain;
+  filter: drop-shadow(2px 2px 4px rgba(0,0,0,.6));
 }
 
 #leaderboardButton {
@@ -61,7 +62,7 @@ body {
 
 #character-select-screen h2 { 
   margin-bottom: 20px;
-  font-size: 1.2em; /* escala aplicada pelo transform */
+  font-size: 1.2em;
 }
 
 .character-option {
@@ -127,7 +128,7 @@ body {
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
-  display: none; /* aparece quando houver imagem */
+  display: none;
 }
 .sponsor-hint {
   color: #bdc3c7;
@@ -208,14 +209,15 @@ canvas {
 @media (max-width: 900px) {
   #character-select-screen { transform: scale(1.15); }
   .sponsors-grid { grid-template-columns: 1fr; }
+  .title-logo { height: 56px; }
 }
 @media (max-width: 768px) {
-  h1 { font-size: 1.6em; }
+  .title-logo { height: 48px; }
   #character-select-screen { padding: 18px; }
   .control-btn { width: 90px; height: 90px; font-size: 36px; }
 }
 @media (max-width: 480px) {
-  h1 { font-size: 1.3em; margin: 10px 0; }
+  .title-logo { height: 42px; }
   .control-btn { width: 75px; height: 75px; font-size: 30px; }
   #controls { gap: 15px; }
 }
