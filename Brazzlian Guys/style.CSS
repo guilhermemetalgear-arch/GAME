@@ -5,12 +5,10 @@ body {
     align-items: center;
     height: 100vh;
     margin: 0;
-    
     background-image: url('https://i.postimg.cc/85Y9Txrd/Cristo-Redentor.webp');
     background-size: cover;
     background-position: center center;
     background-repeat: no-repeat;
-    
     color: #ecf0f1;
     font-family: Arial, sans-serif;
     overflow: hidden;
@@ -27,7 +25,7 @@ h1 {
     display: flex;
     flex-direction: column;
     align-items: center;
-    background-color: rgba(0, 0, 0, 0.7); 
+    background-color: rgba(0, 0, 0, 0.7);
     padding: 30px;
     border-radius: 10px;
     color: #fff;
@@ -56,25 +54,10 @@ h1 {
     text-align: center;
 }
 
-.character-option:hover {
-    background-color: #3498db;
-    color: #fff;
-}
-
-.character-option img {
-    margin-bottom: 5px;
-}
-
-.character-option h3 {
-    margin: 5px 0;
-    font-size: 1.2em;
-    color: #fff;
-}
-
-.character-option p {
-    margin: 0;
-    font-size: 0.9em;
-}
+.character-option:hover { background-color: #3498db; color: #fff; }
+.character-option img { margin-bottom: 5px; }
+.character-option h3 { margin: 5px 0; font-size: 1.2em; color: #fff; }
+.character-option p { margin: 0; font-size: 0.9em; }
 
 #game-container {
     position: relative;
@@ -101,7 +84,6 @@ canvas {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    
     padding: 10px 20px;
     font-size: 16px;
     cursor: pointer;
@@ -109,49 +91,44 @@ canvas {
     color: #fff;
     border: none;
     border-radius: 5px;
-    
     display: none;
     z-index: 10;
 }
 
-/* Regras para os controles de tela */
+/* NOVO: Botão Ranking (ao lado, no canto superior direito do game-container) */
+#leaderboardButton {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    padding: 10px 16px;
+    font-size: 14px;
+    cursor: pointer;
+    background-color: #8e44ad;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    z-index: 11;
+}
+
+#leaderboardButton:hover { filter: brightness(1.08); }
+
 #controls {
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-top: 40px; 
-    gap: 20px; 
+    margin-top: 40px;
+    gap: 20px;
     z-index: 20;
     flex-wrap: wrap;
     width: 90%;
     max-width: 600px;
 }
 
-/* Novo layout para os botões de movimento */
-.d-pad-keyboard {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-}
+.d-pad-keyboard { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.d-pad-horizontal { display: flex; gap: 10px; justify-content: center; }
+.action-buttons { display: flex; flex-direction: column; gap: 10px; }
+.up-btn { align-self: center; }
 
-.d-pad-horizontal {
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-}
-
-.action-buttons {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.up-btn {
-    align-self: center;
-}
-
-/* Alterações para o formato circular e cores */
 .control-btn {
     width: 120px;
     height: 120px;
@@ -159,65 +136,25 @@ canvas {
     font-weight: bold;
     color: #fff;
     border: 2px solid #ecf0f1;
-    border-radius: 50%; 
+    border-radius: 50%;
     cursor: pointer;
     transition: background-color 0.2s ease;
 }
-
-.control-btn:active {
-    filter: brightness(1.2); 
-}
-
-/* Cores específicas para cada tipo de botão */
-#up-btn, #down-btn, #left-btn, #right-btn {
-    background-color: #3498db; 
-}
-
-#a-btn {
-    background-color: #2ecc71; 
-}
-
-#control-restart-btn {
-    background-color: #e74c3c; 
-}
+.control-btn:active { filter: brightness(1.2); }
+#up-btn, #down-btn, #left-btn, #right-btn { background-color: #3498db; }
+#a-btn { background-color: #2ecc71; }
+#control-restart-btn { background-color: #e74c3c; }
 
 @media (max-width: 768px) {
-    h1 {
-        font-size: 1.5em;
-    }
-
-    #character-select-screen {
-        padding: 15px;
-    }
-
-    .character-option p {
-        font-size: 0.8em;
-    }
-
-    .character-option h3 {
-        font-size: 1em;
-    }
-
-    .control-btn {
-        width: 90px;
-        height: 90px;
-        font-size: 36px;
-    }
+    h1 { font-size: 1.5em; }
+    #character-select-screen { padding: 15px; }
+    .character-option p { font-size: 0.8em; }
+    .character-option h3 { font-size: 1em; }
+    .control-btn { width: 90px; height: 90px; font-size: 36px; }
 }
 
 @media (max-width: 480px) {
-    h1 {
-        font-size: 1.2em;
-        margin: 10px 0;
-    }
-
-    .control-btn {
-        width: 75px;
-        height: 75px;
-        font-size: 30px;
-    }
-
-    #controls {
-        gap: 15px;
-    }
+    h1 { font-size: 1.2em; margin: 10px 0; }
+    .control-btn { width: 75px; height: 75px; font-size: 30px; }
+    #controls { gap: 15px; }
 }

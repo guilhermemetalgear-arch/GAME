@@ -8,28 +8,41 @@
 </head>
 <body ontouchstart="">
     <h1>BRAZILLIAN GUY - THE GAME</h1>
+
     <div id="character-select-screen">
         <h2>Escolha seu Personagem</h2>
+
+        <!-- Personagem 1: agora "Piriguete" -->
         <div class="character-option" id="character1" data-image="https://i.postimg.cc/63yzhX9k/792-7927606-sad-meme-face-forever-alone-guy.jpg">
             <img src="https://i.postimg.cc/63yzhX9k/792-7927606-sad-meme-face-forever-alone-guy.jpg" alt="Personagem 1" width="98" height="98">
-            <h3>Garoto Inocente</h3>
+            <h3>Piriguete</h3>
             <p>Resistência ao primeiro contato (chance extra)</p>
         </div>
+
         <div class="character-option" id="character2" data-image="https://i.postimg.cc/W3bm57SQ/Pngtree-3d-delivery-man-red-scooter-14434092.png">
             <img src="https://i.postimg.cc/W3bm57SQ/Pngtree-3d-delivery-man-red-scooter-14434092.png" alt="Personagem 2" width="98" height="98">
             <h3>Motoboy</h3>
             <p>Velocidade de +40%</p>
         </div>
+
+        <!-- Personagem 3: agora "Malandro" -->
         <div class="character-option" id="character3" data-image="https://i.postimg.cc/zGRckx63/20250824-1543-Cheerful-Cartoon-Wave-simple-compose-01k3ep8xhjfje80vm60yp9h9x4.gif">
             <img src="https://i.postimg.cc/zGRckx63/20250824-1543-Cheerful-Cartoon-Wave-simple-compose-01k3ep8xhjfje80vm60yp9h9x4.gif" alt="Personagem 3" width="98" height="98">
-            <h3>Garoto Esperto</h3>
+            <h3>Malandro</h3>
             <p>Aperte A e elimine os inimigos em um raio de ação (1 uso por partida)</p>
         </div>
     </div>
+
     <div id="game-container">
         <canvas id="gameCanvas"></canvas>
+
+        <!-- Botão de Reiniciar (já existente) -->
         <button id="restartButton">Reiniciar Jogo</button>
+
+        <!-- NOVO: Botão Ranking, “ao lado” do jogo -->
+        <button id="leaderboardButton" title="Ver top 3 pontuações">Ranking</button>
     </div>
+
     <div id="controls" style="display: none;">
         <div class="d-pad-keyboard">
             <button class="control-btn" id="up-btn">▲</button>
@@ -46,7 +59,7 @@
     </div>
 
     <audio id="gameMusic" src="https://www.dropbox.com/scl/fi/y1so2um48xj5y9ocw0av2/jogo.mp3?rlkey=jto9dgm5zmieqkp129hq2t2af&st=n4z2x1zs&raw=1" loop></audio>
-<audio id="bg-music" src="https://www.dropbox.com/scl/fi/y1so2um48xj5y9ocw0av2/jogo.mp3?rlkey=jto9dgm5zmieqkp129hq2t2af&st=n4z2x1zs&raw=1" loop></audio>
+    <audio id="bg-music" src="https://www.dropbox.com/scl/fi/y1so2um48xj5y9ocw0av2/jogo.mp3?rlkey=jto9dgm5zmieqkp129hq2t2af&st=n4z2x1zs&raw=1" loop></audio>
     <script src="script.JS"></script>
 </body>
 </html>
