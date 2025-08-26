@@ -7,11 +7,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const gameContainer = document.getElementById('game-container');
     const controls = document.getElementById('controls');
 
-    // Ranking (novo)
+    // Ranking (interno)
     const leaderboardButton = document.getElementById('leaderboardButton');
     const leaderboardList = document.getElementById('leaderboard-list');
     const leaderboardReload = document.getElementById('leaderboardReload');
     const leaderboardBack = document.getElementById('leaderboardBack');
+
+    // Patrocinadores (novos campos + preview)
+    const sponsor1Url = document.getElementById('sponsor1Url');
+    const sponsor2Url = document.getElementById('sponsor2Url');
+    const sponsor3Url = document.getElementById('sponsor3Url');
+    const sponsor1Img = document.getElementById('sponsor1Img');
+    const sponsor2Img = document.getElementById('sponsor2Img');
+    const sponsor3Img = document.getElementById('sponsor3Img');
 
     // Elementos do jogo
     const canvas = document.getElementById('gameCanvas');
@@ -197,7 +205,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function createEnemy() {
         if (gameOver) return;
         const wave = spawnWaves[enemyCount % spawnWaves.length];
-        const enemySize = 64; // 40 * 1.6 (ajuste fino)
+        const enemySize = 64; // 40 * 1.6
         const img = new Image();
         img.src = enemyURLs[wave.typeIndex];
         enemies.push({
@@ -401,6 +409,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     aBtn.addEventListener('mousedown', () => activateAbility());
     aBtn.addEventListener('touchstart', e => { e.preventDefault(); activateAbility(); });
+
+    // ====== Patrocinadores: pré-visualização ao digitar ======
+    const onPreview = (input, img) => {
+        const url = (input.value || '').trim();
+        if (!url) { img.removeAttribute('src'); return; }
+        img.src = url;
+    };
+    sponsor1Url?.addEventListener('input', () => onPreview(sponsor1Url, sponsor1Img));
+    sponsor2Url?.addEventListener('input', () => onPreview(sponsor2Url, sponsor2Img));
+    sponsor3Url?.addEventListener('input', () => onPreview(sponsor3Url, sponsor3Img));
 
     // Inicia na tela de seleção
     showSelect();

@@ -13,7 +13,7 @@
         <button id="leaderboardButton" title="Ver top 3 pontuações">Ranking</button>
     </div>
 
-    <!-- TELA: Seleção de Personagem -->
+    <!-- TELA: Seleção de Personagem (agora ampliada em 30%) -->
     <div id="character-select-screen">
         <h2>Escolha seu Personagem</h2>
 
@@ -38,6 +38,34 @@
             <p>Aperte A e elimine os inimigos em um raio de ação (1 uso por partida)</p>
         </div>
     </div>
+
+    <!-- SEÇÃO: Patrocinadores (3 campos com preview) -->
+    <section id="sponsors-section" aria-label="Patrocinadores">
+        <h2>Patrocinadores</h2>
+        <div class="sponsors-grid">
+            <div class="sponsor-item">
+                <label for="sponsor1Url">Imagem 1 (URL):</label>
+                <input type="url" id="sponsor1Url" placeholder="https://exemplo.com/logo1.png" />
+                <div class="sponsor-preview">
+                    <img id="sponsor1Img" alt="Prévia do Patrocinador 1">
+                </div>
+            </div>
+            <div class="sponsor-item">
+                <label for="sponsor2Url">Imagem 2 (URL):</label>
+                <input type="url" id="sponsor2Url" placeholder="https://exemplo.com/logo2.png" />
+                <div class="sponsor-preview">
+                    <img id="sponsor2Img" alt="Prévia do Patrocinador 2">
+                </div>
+            </div>
+            <div class="sponsor-item">
+                <label for="sponsor3Url">Imagem 3 (URL):</label>
+                <input type="url" id="sponsor3Url" placeholder="https://exemplo.com/logo3.png" />
+                <div class="sponsor-preview">
+                    <img id="sponsor3Img" alt="Prévia do Patrocinador 3">
+                </div>
+            </div>
+        </div>
+    </section>
 
     <!-- TELA: Ranking interno -->
     <div id="leaderboard-screen" style="display:none;">
