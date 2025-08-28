@@ -1,3 +1,57 @@
+/* ====== TELA INICIAL ====== */
+#start-screen {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100vh;
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 100;
+}
+.start-card {
+  background: rgba(44, 62, 80, 0.9);
+  padding: 40px;
+  border-radius: 12px;
+  text-align: center;
+  color: #ecf0f1;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+}
+.start-card h1 {
+  margin: 0 0 10px;
+  font-size: 2.5em;
+  color: #fff;
+  filter: drop-shadow(2px 2px 3px #3498db);
+}
+.start-card p {
+  margin-bottom: 30px;
+  font-size: 1.1em;
+  opacity: 0.9;
+}
+.start-buttons {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+}
+.start-buttons button {
+  padding: 12px 25px;
+  font-size: 1.1em;
+  font-weight: bold;
+  cursor: pointer;
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  transition: all 0.3s ease;
+}
+#login-btn { background-color: #27ae60; }
+#login-btn:hover { background-color: #2ecc71; transform: translateY(-2px); }
+#training-btn { background-color: #8e44ad; }
+#training-btn:hover { background-color: #9b59b6; transform: translateY(-2px); }
+
+
 /* ====== Título (imagem) + botão Ranking ====== */
 .title-row {
   display: flex;
@@ -6,7 +60,6 @@
   margin-top: 12px;
 }
 
-/* 3x maior (antes ~64px) → 192px */
 .title-logo {
   height: 192px;
   max-width: 70vw;
@@ -14,16 +67,19 @@
   filter: drop-shadow(2px 2px 4px rgba(0,0,0,.6));
 }
 
+/* ALTERADO: Botão de ranking maior */
 #leaderboardButton {
-  padding: 12px 18px;
-  font-size: 16px;
+  padding: 16px 24px;
+  font-size: 20px;
+  font-weight: bold;
   cursor: pointer;
   background-color: #8e44ad;
   color: #fff;
   border: none;
   border-radius: 8px;
+  transition: filter 0.2s;
 }
-#leaderboardButton:hover { filter: brightness(1.08); }
+#leaderboardButton:hover { filter: brightness(1.1); }
 
 /* ====== Fundo ====== */
 body {
@@ -42,7 +98,7 @@ body {
   overflow: hidden;
 }
 
-/* ====== Seleção de personagem (ampliada 30%) ====== */
+/* ====== Seleção de personagem ====== */
 #character-select-screen {
   display: flex;
   flex-direction: column;
@@ -51,28 +107,32 @@ body {
   padding: 30px;
   border-radius: 10px;
   color: #fff;
-  z-index: 10; /* acima */
+  z-index: 10;
   max-width: 90%;
   box-sizing: border-box;
-
-  transform: scale(1.3);
   transform-origin: top center;
   margin-top: 8px;
-
-  /* Garante espaço abaixo, já que o scale não muda a altura do layout */
-  margin-bottom: clamp(80px, 12vh, 220px);
 }
 
 #character-select-screen h2 { 
   margin-bottom: 20px;
-  font-size: 1.2em;
+  font-size: 1.5em;
+}
+
+/* ATUALIZADO: Grid para espaçamento uniforme dos personagens na vertical */
+.character-grid {
+  display: flex;
+  flex-direction: column; /* Organiza os itens em uma coluna */
+  justify-content: center;
+  align-items: center;   /* Centraliza os itens horizontalmente na coluna */
+  gap: 25px;             /* Espaçamento entre os cards */
+  width: 100%;
 }
 
 .character-option {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin: 10px;
   padding: 15px;
   border: 2px solid #3498db;
   border-radius: 8px;
@@ -80,138 +140,85 @@ body {
   transition: background-color 0.3s ease;
   background-color: rgba(52, 152, 219, 0.8);
   color: #fff;
-  z-index: 11;
   text-align: center;
+  width: 180px; /* Largura base para cada card */
 }
-.character-option:hover { background-color: #3498db; color: #fff; }
+.character-option:hover { background-color: #3498db; }
 .character-option img { margin-bottom: 5px; }
-.character-option h3 { margin: 5px 0; font-size: 1.2em; color: #fff; }
+.character-option h3 { margin: 10px 0 5px; font-size: 1.2em; }
 .character-option p { margin: 0; font-size: 0.9em; }
 
-/* ====== Patrocinadores (somente imagem definida no código) ====== */
+/* NOVO: Estilo para o botão "Voltar" */
+.back-button {
+  margin-top: 25px;
+  padding: 12px 25px;
+  font-size: 1em;
+  font-weight: bold;
+  cursor: pointer;
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  background-color: #c0392b; /* Vermelho */
+  transition: background-color 0.2s;
+}
+.back-button:hover {
+  background-color: #e74c3c;
+}
+
+/* ====== Patrocinadores ====== */
 #sponsors-section {
   width: min(95vw, 980px);
-  margin-top: 24px;   /* afastado da seleção */
+  margin-top: 24px;
   background: rgba(0, 0, 0, 0.55);
   padding: 16px;
   border-radius: 10px;
   position: relative;
-  z-index: 5; /* abaixo da seleção, mas não sobreposto */
+  z-index: 5;
 }
-#sponsors-section h2 {
-  margin: 0 0 10px;
-  font-size: 1.2em;
-}
-.sponsors-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
-}
-.sponsor-item {
-  display: none; /* JS mostra apenas quando há URL configurada */
-  background: rgba(44, 62, 80, 0.85);
-  border-radius: 8px;
-  padding: 12px;
-}
-.sponsor-preview {
-  background: #17202a;
-  border: 1px dashed #566573;
-  border-radius: 6px;
-  height: 110px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-}
-.sponsor-preview img {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-}
-
-/* 🔒 Garantia extra: se algum input/label antigo estiver em cache, esconda */
-#sponsors-section input,
-#sponsors-section label {
-  display: none !important;
-}
+#sponsors-section h2 { margin: 0 0 10px; font-size: 1.2em; }
+.sponsors-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.sponsor-item { display: none; background: rgba(44, 62, 80, 0.85); border-radius: 8px; padding: 12px; }
+.sponsor-preview { background: #17202a; border: 1px dashed #566573; border-radius: 6px; height: 110px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.sponsor-preview img { max-width: 100%; max-height: 100%; object-fit: contain; }
 
 /* ====== Ranking interno ====== */
-#leaderboard-screen {
-  display: none;
-  margin-top: 20px;
-  width: min(92vw, 520px);
-}
-.leaderboard-card {
-  background: rgba(0, 0, 0, 0.7);
-  padding: 18px;
-  border-radius: 10px;
-}
+#leaderboard-screen { display: none; margin-top: 20px; width: min(92vw, 520px); }
+.leaderboard-card { background: rgba(0, 0, 0, 0.7); padding: 18px; border-radius: 10px; }
 .leaderboard-card h2 { margin: 0 0 12px; }
 .leaderboard-list { background: #2c3e50; border-radius: 8px; padding: 8px 0; }
-.lb-item {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,0.08);
-}
+.lb-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,0.08); }
 .lb-item:last-child { border-bottom: none; }
 .lb-pos { font-weight: bold; width: 40px; }
 .lb-name { flex: 1; padding: 0 8px; }
 .lb-score { width: 90px; text-align: right; }
 .muted { opacity: 0.8; }
 .leaderboard-actions { margin-top: 12px; display: flex; gap: 10px; justify-content: flex-end; }
-.lb-reload, .lb-back {
-  padding: 10px 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;
-}
+.lb-reload, .lb-back { padding: 10px 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
 .lb-reload { background: #8e44ad; color: #fff; }
 .lb-back { background: #27ae60; color: #fff; }
 
 /* ====== Jogo ====== */
-#game-container {
-  position: relative;
-  display: none;
-  margin-top: 20px;
-  background-color: rgba(52, 73, 94, 0.8);
-  max-width: 95vw;
-  max-height: 80vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-canvas {
-  background-color: transparent;
-  border: 2px solid #ecf0f1;
-  max-width: 100%;
-  max-height: 100%;
-  touch-action: none;
-}
-#restartButton {
-  position: absolute;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  padding: 10px 20px; font-size: 16px; cursor: pointer;
-  background-color: #27ae60; color: #fff; border: none; border-radius: 5px;
-  display: none; z-index: 10;
-}
+#game-container { position: relative; margin-top: 20px; background-color: rgba(52, 73, 94, 0.8); max-width: 95vw; max-height: 80vh; display: flex; justify-content: center; align-items: center; }
+canvas { background-color: transparent; border: 2px solid #ecf0f1; max-width: 100%; max-height: 100%; touch-action: none; }
+#restartButton { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 10px 20px; font-size: 16px; cursor: pointer; background-color: #27ae60; color: #fff; border: none; border-radius: 5px; display: none; z-index: 10; }
 
 /* ====== Controles mobile ====== */
 #controls { display: flex; justify-content: center; align-items: center; margin-top: 40px; gap: 20px; z-index: 20; flex-wrap: wrap; width: 90%; max-width: 600px; }
 .d-pad-keyboard { display: flex; flex-direction: column; align-items: center; gap: 10px; }
 .d-pad-horizontal { display: flex; gap: 10px; justify-content: center; }
 .action-buttons { display: flex; flex-direction: column; gap: 10px; }
-.up-btn { align-self: center; }
-.control-btn { width: 120px; height: 120px; font-size: 54px; font-weight: bold; color: #fff; border: 2px solid #ecf0f1; border-radius: 50%; cursor: pointer; transition: background-color 0.2s ease; }
+.control-btn { width: 120px; height: 120px; font-size: 54px; font-weight: bold; color: #fff; border: 2px solid #ecf0f1; border-radius: 50%; cursor: pointer; transition: background-color 0.2s ease; user-select: none; }
 .control-btn:active { filter: brightness(1.2); }
 #up-btn, #down-btn, #left-btn, #right-btn { background-color: #3498db; }
-#a-btn { background-color: #2ecc71; }
+#z-btn { background-color: #2ecc71; }
 #control-restart-btn { background-color: #e74c3c; }
 
 @media (max-width: 900px) {
   .title-logo { height: 160px; }
-  #character-select-screen { transform: scale(1.15); margin-bottom: clamp(60px, 10vh, 180px); }
   .sponsors-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 768px) {
   .title-logo { height: 128px; }
-  #character-select-screen { padding: 18px; }
   .control-btn { width: 90px; height: 90px; font-size: 36px; }
 }
 @media (max-width: 480px) {

@@ -7,8 +7,18 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body ontouchstart="">
-  <!-- Título (imagem) + Botão Ranking -->
-  <div class="title-row">
+  <div id="start-screen">
+    <div class="start-card">
+      <h1>BRAZILLIAN GUY</h1>
+      <p>A jornada vai começar. Você está pronto?</p>
+      <div class="start-buttons">
+        <button id="login-btn">Efetuar Login</button>
+        <button id="training-btn">Treinar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="title-row" style="display: none;">
     <img
       id="titleLogo"
       class="title-logo"
@@ -20,61 +30,46 @@
     <button id="leaderboardButton" title="Ver top 3 pontuações">Ranking</button>
   </div>
 
-  <!-- TELA: Seleção de Personagem (ampliada 30%) -->
-  <div id="character-select-screen">
+  <div id="character-select-screen" style="display: none;">
     <h2>Escolha seu Personagem</h2>
+    
+    <div class="character-grid">
+      <div class="character-option" id="character1" data-image="https://i.postimg.cc/wjMbqBwn/Chat-GPT-Image-27-de-ago-de-2025-22-22-04.png">
+        <img src="https://i.postimg.cc/wjMbqBwn/Chat-GPT-Image-27-de-ago-de-2025-22-22-04.png" alt="Personagem 1" width="98" height="98">
+        <h3>Maria</h3>
+        <p>Resistência ao primeiro contato (chance extra)</p>
+      </div>
 
-    <!-- Personagem 1: Piriguete -->
-    <div class="character-option" id="character1" data-image="https://i.postimg.cc/63yzhX9k/792-7927606-sad-meme-face-forever-alone-guy.jpg">
-      <img src="https://i.postimg.cc/63yzhX9k/792-7927606-sad-meme-face-forever-alone-guy.jpg" alt="Personagem 1" width="98" height="98">
-      <h3>Piriguete</h3>
-      <p>Resistência ao primeiro contato (chance extra)</p>
+      <div class="character-option" id="character2" data-image="https://i.postimg.cc/W3bm57SQ/Pngtree-3d-delivery-man-red-scooter-14434092.png">
+        <img src="https://i.postimg.cc/W3bm57SQ/Pngtree-3d-delivery-man-red-scooter-14434092.png" alt="Personagem 2" width="98" height="98">
+        <h3>Motoboy</h3>
+        <p>Velocidade de +40%</p>
+      </div>
+
+      <div class="character-option" id="character3" data-image="https://i.postimg.cc/zGRckx63/20250824-1543-Cheerful-Cartoon-Wave-simple-compose-01k3ep8xhjfje80vm60yp9h9x4.gif">
+        <img src="https://i.postimg.cc/zGRckx63/20250824-1543-Cheerful-Cartoon-Wave-simple-compose-01k3ep8xhjfje80vm60yp9h9x4.gif" alt="Personagem 3" width="98" height="98">
+        <h3>João</h3>
+        <p>Aperte Z e elimine os inimigos em um raio de ação (1 uso por partida)</p>
+      </div>
     </div>
 
-    <!-- Personagem 2: Motoboy -->
-    <div class="character-option" id="character2" data-image="https://i.postimg.cc/W3bm57SQ/Pngtree-3d-delivery-man-red-scooter-14434092.png">
-      <img src="https://i.postimg.cc/W3bm57SQ/Pngtree-3d-delivery-man-red-scooter-14434092.png" alt="Personagem 2" width="98" height="98">
-      <h3>Motoboy</h3>
-      <p>Velocidade de +40%</p>
-    </div>
+    <button id="backToStartBtn" class="back-button">Voltar</button>
 
-    <!-- Personagem 3: Malandro -->
-    <div class="character-option" id="character3" data-image="https://i.postimg.cc/zGRckx63/20250824-1543-Cheerful-Cartoon-Wave-simple-compose-01k3ep8xhjfje80vm60yp9h9x4.gif">
-      <img src="https://i.postimg.cc/zGRckx63/20250824-1543-Cheerful-Cartoon-Wave-simple-compose-01k3ep8xhjfje80vm60yp9h9x4.gif" alt="Personagem 3" width="98" height="98">
-      <h3>Malandro</h3>
-      <p>Aperte A e elimine os inimigos em um raio de ação (1 uso por partida)</p>
-    </div>
   </div>
 
-  <!-- SEÇÃO: Patrocinadores (apenas imagem vinda do código) -->
-  <section id="sponsors-section" aria-label="Patrocinadores">
+  <section id="sponsors-section" aria-label="Patrocinadores" style="display: none;">
     <h2>Patrocinadores</h2>
     <div class="sponsors-grid">
-      <div class="sponsor-item">
-        <div class="sponsor-preview">
-          <img id="sponsor1Img" alt="Patrocinador 1">
-        </div>
-      </div>
-      <div class="sponsor-item">
-        <div class="sponsor-preview">
-          <img id="sponsor2Img" alt="Patrocinador 2">
-        </div>
-      </div>
-      <div class="sponsor-item">
-        <div class="sponsor-preview">
-          <img id="sponsor3Img" alt="Patrocinador 3">
-        </div>
-      </div>
+      <div class="sponsor-item"><div class="sponsor-preview"><img id="sponsor1Img" alt="Patrocinador 1"></div></div>
+      <div class="sponsor-item"><div class="sponsor-preview"><img id="sponsor2Img" alt="Patrocinador 2"></div></div>
+      <div class="sponsor-item"><div class="sponsor-preview"><img id="sponsor3Img" alt="Patrocinador 3"></div></div>
     </div>
   </section>
 
-  <!-- TELA: Ranking interno -->
   <div id="leaderboard-screen" style="display:none;">
     <div class="leaderboard-card">
       <h2>🏆 Top 3 Pontuações</h2>
-      <div id="leaderboard-list" class="leaderboard-list">
-        <div class="lb-item muted">Carregando...</div>
-      </div>
+      <div id="leaderboard-list" class="leaderboard-list"></div>
       <div class="leaderboard-actions">
         <button id="leaderboardReload" class="lb-reload">Recarregar</button>
         <button id="leaderboardBack" class="lb-back">Voltar ao Menu</button>
@@ -82,13 +77,11 @@
     </div>
   </div>
 
-  <!-- TELA: Jogo -->
-  <div id="game-container">
+  <div id="game-container" style="display: none;">
     <canvas id="gameCanvas"></canvas>
     <button id="restartButton">Reiniciar Jogo</button>
   </div>
 
-  <!-- Controles (mobile) -->
   <div id="controls" style="display: none;">
     <div class="d-pad-keyboard">
       <button class="control-btn" id="up-btn">▲</button>
@@ -99,7 +92,7 @@
       </div>
     </div>
     <div class="action-buttons">
-      <button class="control-btn" id="a-btn">A</button>
+      <button class="control-btn" id="z-btn">Z</button>
       <button class="control-btn" id="control-restart-btn">⟳</button>
     </div>
   </div>
