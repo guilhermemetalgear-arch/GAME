@@ -56,6 +56,7 @@
 .title-row {
   display: flex;
   align-items: center;
+  justify-content: center; /* Centraliza o logo que restou */
   gap: 16px;
   margin-top: 12px;
 }
@@ -66,20 +67,6 @@
   object-fit: contain;
   filter: drop-shadow(2px 2px 4px rgba(0,0,0,.6));
 }
-
-/* ALTERADO: Botão de ranking maior */
-#leaderboardButton {
-  padding: 16px 24px;
-  font-size: 20px;
-  font-weight: bold;
-  cursor: pointer;
-  background-color: #8e44ad;
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  transition: filter 0.2s;
-}
-#leaderboardButton:hover { filter: brightness(1.1); }
 
 /* ====== Fundo ====== */
 body {
@@ -119,13 +106,12 @@ body {
   font-size: 1.5em;
 }
 
-/* ATUALIZADO: Grid para espaçamento uniforme dos personagens na vertical */
 .character-grid {
   display: flex;
-  flex-direction: column; /* Organiza os itens em uma coluna */
+  flex-direction: column;
   justify-content: center;
-  align-items: center;   /* Centraliza os itens horizontalmente na coluna */
-  gap: 25px;             /* Espaçamento entre os cards */
+  align-items: center;
+  gap: 25px;
   width: 100%;
 }
 
@@ -141,16 +127,24 @@ body {
   background-color: rgba(52, 152, 219, 0.8);
   color: #fff;
   text-align: center;
-  width: 180px; /* Largura base para cada card */
+  width: 180px;
 }
 .character-option:hover { background-color: #3498db; }
 .character-option img { margin-bottom: 5px; }
 .character-option h3 { margin: 10px 0 5px; font-size: 1.2em; }
 .character-option p { margin: 0; font-size: 0.9em; }
 
-/* NOVO: Estilo para o botão "Voltar" */
-.back-button {
+
+/* ATUALIZADO: Estilos para o container dos botões Voltar e Ranking */
+.character-select-actions {
+  display: flex;
+  gap: 15px;
   margin-top: 25px;
+  justify-content: center;
+  width: 100%;
+}
+
+.character-select-actions button {
   padding: 12px 25px;
   font-size: 1em;
   font-weight: bold;
@@ -158,12 +152,23 @@ body {
   border: none;
   border-radius: 8px;
   color: #fff;
-  background-color: #c0392b; /* Vermelho */
-  transition: background-color 0.2s;
+  transition: background-color 0.2s, filter 0.2s;
 }
-.back-button:hover {
+
+#backToStartBtn {
+  background-color: #c0392b; /* Vermelho */
+}
+#backToStartBtn:hover {
   background-color: #e74c3c;
 }
+
+#leaderboardButton {
+  background-color: #8e44ad; /* Roxo */
+}
+#leaderboardButton:hover {
+  filter: brightness(1.1);
+}
+
 
 /* ====== Patrocinadores ====== */
 #sponsors-section {

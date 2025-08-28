@@ -13,9 +13,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // Botões
   const loginBtn = document.getElementById('login-btn');
   const trainingBtn = document.getElementById('training-btn');
-  const backToStartBtn = document.getElementById('backToStartBtn'); // NOVO: Botão Voltar
+  const backToStartBtn = document.getElementById('backToStartBtn');
 
-  // Ranking interno
+  // Ranking
   const leaderboardButton = document.getElementById('leaderboardButton');
   const leaderboardList = document.getElementById('leaderboard-list');
   const leaderboardReload = document.getElementById('leaderboardReload');
@@ -30,12 +30,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const canvas = document.getElementById('gameCanvas');
   const ctx = canvas.getContext('2d');
   const restartButton = document.getElementById('restartButton');
+  const characterOptions = document.querySelectorAll('.character-option');
 
-  // Controles mobile
+  // Controles
   const zBtn = document.getElementById('z-btn');
   const controlRestartBtn = document.getElementById('control-restart-btn');
-
-  const characterOptions = document.querySelectorAll('.character-option');
 
   // Estado do jogo
   let selectedCharacterId = null;
@@ -43,9 +42,9 @@ document.addEventListener('DOMContentLoaded', () => {
   let abilityUsed = false;
   let enemyCount = 0;
   let userName = null;
-  let userId = null;
   let score = 0;
   let isTrainingMode = false;
+  let lastTime = 0; // Para o delta time
 
   function resizeCanvas() { canvas.width = 1000; canvas.height = 800; }
   resizeCanvas();
@@ -57,17 +56,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const thunderImg = new Image();
   thunderImg.src = 'https://i.postimg.cc/jSqr4b9t/Pngtree-thunder-and-bolt-flash-vector-4723241.png';
   let abilityParticles = [];
-  let lastMove = { x: 1, y: 0 };
-
-  // Inimigos (URLs, padrões de movimento, etc.)
-  const enemyURLs = ['https://i.postimg.cc/hG3R7qvv/33.jpg','https://i.postimg.cc/3rcYwcHc/blusinha.png','https://i.postimg.cc/bv92cjWM/3.jpg','https://i.postimg.cc/tgz7mQMg/Ovos-PNG-Transparente-Sem-Fundo.png','https://i.postimg.cc/Y0h4WL0K/6.jpg','https://i.postimg.cc/hG3R7qvv/33.jpg','https://i.postimg.cc/3rcYwcHc/blusinha.png','https://i.postimg.cc/bv92cjWM/3.jpg','https://i.postimg.cc/tgz7mQMg/Ovos-PNG-Transparente-Sem-Fundo.png','https://i.postimg.cc/Y0h4WL0K/6.jpg'];
+  
+  // ATUALIZADO: URL do primeiro inimigo alterada
+  const enemyURLs = ['https://i.postimg.cc/BnTF8rms/Chat-GPT-Image-27-de-ago-de-2025-22-51-05.png','https://i.postimg.cc/3rcYwcHc/blusinha.png','https://i.postimg.cc/bv92cjWM/3.jpg','https://i.postimg.cc/tgz7mQMg/Ovos-PNG-Transparente-Sem-Fundo.png','https://i.postimg.cc/Y0h4WL0K/6.jpg','https://i.postimg.cc/hG3R7qvv/33.jpg','https://i.postimg.cc/3rcYwcHc/blusinha.png','https://i.postimg.cc/bv92cjWM/3.jpg','https://i.postimg.cc/tgz7mQMg/Ovos-PNG-Transparente-Sem-Fundo.png','https://i.postimg.cc/Y0h4WL0K/6.jpg'];
   const movementPatterns = [{ dx: 2, dy: 0 },{ dx: 0, dy: 2 },{ dx: 1.5, dy: 1.5 },{ dx: 3, dy: 0 },{ dx: 1, dy: -2 },{ dx: -1.5, dy: 1.5 },{ dx: 2.5, dy: -1 },{ dx: -2, dy: -2 },{ dx: 3, dy: 3 },{ dx: -3, dy: 0 }];
   const spawnWaves = [{ typeIndex: 0, side: 0, startX: 0, startY: 300 },{ typeIndex: 5, side: 1, startX: 1000, startY: 500 },{ typeIndex: 7, side: 2, startX: 400, startY: 800 },{ typeIndex: 8, side: 3, startX: 0, startY: 100 },{ typeIndex: 9, side: 0, startX: 500, startY: 0 },{ typeIndex: 1, side: 1, startX: 1000, startY: 200 },{ typeIndex: 2, side: 2, startX: 250, startY: 800 },{ typeIndex: 3, side: 3, startX: 0, startY: 600 },{ typeIndex: 4, side: 0, startX: 750, startY: 0 },{ typeIndex: 6, side: 1, startX: 1000, startY: 450 }];
 
-  let player = { x: canvas.width/2 - 49, y: canvas.height/2 - 49, width: 98, height: 98, speed: 5, health: 100, maxHealth: 100, lastHitTime: 0 };
+  let player = { x: canvas.width/2 - 49, y: canvas.height/2 - 49, width: 98, height: 98, speed: 300, health: 100, maxHealth: 100, lastHitTime: 0 }; // Velocidade em pixels/segundo
   let enemies = [];
   let gameOver = false;
-  let time = 0;
   let enemyInterval;
   const keys = {};
 
@@ -89,52 +86,45 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function loadTop3() {
-    leaderboardList.innerHTML = ''; 
-    const fakeData = [
-        { user_name: 'Herói da Laje', score: 95 },
-        { user_name: 'Dona Maria', score: 80 },
-        { user_name: 'Anônimo', score: 50 }
-    ].sort((a, b) => b.score - a.score);
-    
-    if (fakeData.length === 0) {
-        leaderboardList.innerHTML = '<div class="lb-item muted">Nenhuma pontuação registrada ainda.</div>';
-        return;
-    }
+      leaderboardList.innerHTML = '<div class="lb-item muted">Carregando...</div>';
+      const endpoint = '/.netlify/functions/top-scores?limit=3';
+      try {
+          const response = await fetch(endpoint);
+          if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
+          
+          const result = await response.json();
+          const scores = result.data || [];
 
-    fakeData.forEach((entry, index) => {
-        const item = document.createElement('div');
-        item.className = 'lb-item';
-        item.innerHTML = `
-            <div class="lb-pos">${index + 1}</div>
-            <div class="lb-name">${entry.user_name || 'Anônimo'}</div>
-            <div class="lb-score">${entry.score}</div>
-        `;
-        leaderboardList.appendChild(item);
-    });
+          leaderboardList.innerHTML = '';
+          
+          if (scores.length === 0) {
+              leaderboardList.innerHTML = '<div class="lb-item muted">Nenhuma pontuação registrada.</div>';
+              return;
+          }
+
+          scores.forEach((entry, index) => {
+              const item = document.createElement('div');
+              item.className = 'lb-item';
+              item.innerHTML = `
+                  <div class="lb-pos">${index + 1}</div>
+                  <div class="lb-name">${entry.user_name || 'Anônimo'}</div>
+                  <div class="lb-score">${entry.points}</div>
+              `;
+              leaderboardList.appendChild(item);
+          });
+      } catch (error) {
+          console.error("Falha ao carregar ranking:", error);
+          leaderboardList.innerHTML = '<div class="lb-item muted">Erro ao carregar ranking.</div>';
+      }
   }
 
   function spawnAbilityBurst() {
-    const N = 6;
-    const speed = 7;
-    const life = 120;
-    
+    const N = 6; const speed = 420; const life = 2000;
     const startX = player.x + player.width / 2;
     const startY = player.y + player.height / 2;
-
     for (let i = 0; i < N; i++) {
       const angle = (i / N) * Math.PI * 2;
-      const vx = Math.cos(angle) * speed;
-      const vy = Math.sin(angle) * speed;
-
-      abilityParticles.push({
-        x: startX,
-        y: startY,
-        vx,
-        vy,
-        life: life,
-        maxLife: life,
-        size: 60,
-      });
+      abilityParticles.push({ x: startX, y: startY, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, life: life, maxLife: life, size: 60 });
     }
   }
 
@@ -145,9 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
         enemies.forEach(enemy => {
             const dx = player.x + player.width / 2 - (enemy.x + enemy.width / 2);
             const dy = player.y + player.height / 2 - (enemy.y + enemy.height / 2);
-            if (Math.hypot(dx, dy) <= range) {
-                enemy.health = 0; // ATUALIZADO: Pontos não são mais somados aqui
-            }
+            if (Math.hypot(dx, dy) <= range) enemy.health = 0;
         });
         abilityUsed = true;
     }
@@ -155,15 +143,15 @@ document.addEventListener('DOMContentLoaded', () => {
   
   window.addEventListener('keydown', (e) => {
     const key = e.key.toLowerCase();
-    if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', ' ', 'z'].includes(key)) { e.preventDefault(); }
-    if (['w', 'a', 's', 'd'].includes(key)) { return; }
+    if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', ' ', 'z'].includes(key)) e.preventDefault();
+    if (['w', 'a', 's', 'd'].includes(key)) return;
     if (key === 'z') activateAbility();
     keys[key] = true;
     if (e.key === ' ') resetGame();
   });
   window.addEventListener('keyup', (e) => {
     const key = e.key.toLowerCase();
-    if (['w', 'a', 's', 'd'].includes(key)) { return; }
+    if (['w', 'a', 's', 'd'].includes(key)) return;
     keys[key] = false;
   });
   
@@ -178,15 +166,30 @@ document.addEventListener('DOMContentLoaded', () => {
     controlRestartBtn.addEventListener('touchstart', (e) => { e.preventDefault(); resetGame(); }, { passive: false });
   }
 
-  async function saveScoreToSupabase(userId, userName, points) {
-    console.log(`Simulando salvamento: Usuário: ${userName}, Pontos: ${points}`);
+  async function saveScoreToSupabase(name, points) {
+      const endpoint = '/.netlify/functions/submit-score';
+      console.log(`Enviando pontuação para ${endpoint}:`, { name, points });
+      try {
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, points }),
+        });
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || `Erro HTTP: ${response.status}`);
+        }
+        const result = await response.json();
+        console.log('Pontuação salva com sucesso:', result);
+      } catch (error) {
+        console.error('Falha ao salvar pontuação:', error);
+      }
   }
 
   function createEnemy() {
     if (gameOver) return;
     const wave = spawnWaves[enemyCount % spawnWaves.length];
-    const typeIndex = wave.typeIndex;
-    const imageUrl = enemyURLs[typeIndex];
+    const imageUrl = enemyURLs[wave.typeIndex];
     if (!imageUrl) { enemyCount++; return; }
     const enemy = { x: 0, y: 0, width: 70, height: 70, health: 100, maxHealth: 100, image: new Image() };
     enemy.image.src = imageUrl;
@@ -196,72 +199,65 @@ document.addEventListener('DOMContentLoaded', () => {
         case 2: enemy.x = wave.startX; enemy.y = canvas.height; break;
         case 3: enemy.x = -enemy.width; enemy.y = wave.startY; break;
     }
-    const pattern = movementPatterns[typeIndex % movementPatterns.length];
-    const targetX = canvas.width / 2;
-    const targetY = canvas.height / 2;
+    const pattern = movementPatterns[wave.typeIndex % movementPatterns.length];
+    const targetX = canvas.width / 2; const targetY = canvas.height / 2;
     const angle = Math.atan2(targetY - enemy.y, targetX - enemy.x);
-    const speed = Math.hypot(pattern.dx, pattern.dy) || 2;
+    const speed = (Math.hypot(pattern.dx, pattern.dy) || 2) * 60;
     enemy.dx = Math.cos(angle) * speed;
     enemy.dy = Math.sin(angle) * speed;
     enemies.push(enemy);
     enemyCount++;
   }
 
-  function startGame() { if (bgMusic) { bgMusic.play().catch(() => {}); } resizeCanvas(); enemyInterval = setInterval(createEnemy, 1000); gameLoop(); }
+  function startGame() { 
+    if (bgMusic) bgMusic.play().catch(() => {}); 
+    resizeCanvas(); 
+    enemyInterval = setInterval(createEnemy, 1000); 
+    lastTime = 0;
+    requestAnimationFrame(gameLoop); 
+  }
 
-  function update() {
+  function update(deltaTime) {
     if (gameOver) return;
-    
+    const dt = deltaTime / 1000;
+
     let dx = 0, dy = 0;
     if (keys['arrowup'] || keys['w']) dy -= 1;
     if (keys['arrowdown'] || keys['s']) dy += 1;
     if (keys['arrowleft'] || keys['a']) dx -= 1;
     if (keys['arrowright'] || keys['d']) dx += 1;
 
-    if (dx !== 0 || dy !== 0) { const len = Math.hypot(dx, dy); lastMove = { x: dx / len, y: dy / len }; }
-    player.y += (dy * player.speed);
-    player.x += (dx * player.speed);
+    const len = Math.hypot(dx, dy);
+    if (len > 0) {
+      player.x += (dx / len) * player.speed * dt;
+      player.y += (dy / len) * player.speed * dt;
+    }
+    
     player.x = Math.max(0, Math.min(canvas.width - player.width, player.x));
     player.y = Math.max(0, Math.min(canvas.height - player.height, player.y));
     
-    enemies.forEach(e => { e.x += e.dx; e.y += e.dy; });
-
+    enemies.forEach(e => { e.x += e.dx * dt; e.y += e.dy * dt; });
     const now = Date.now();
-    const isInvulnerable = (now - player.lastHitTime < 500);
-    if (!isInvulnerable) {
+    if (now - player.lastHitTime >= 500) {
         for (const enemy of enemies) {
             if (player.x < enemy.x + enemy.width && player.x + player.width > enemy.x && player.y < enemy.y + enemy.height && player.y + player.height > enemy.y) {
                 player.lastHitTime = now;
-                // ATUALIZADO: Lógica de dano sem somar pontos
                 if (selectedCharacterId === 'character1' && extraLife) { 
-                    extraLife = false; 
-                    enemy.health = 0; 
+                    extraLife = false; enemy.health = 0; 
                 } else {
-                    const damageToEnemy = 34; 
-                    const damageToPlayer = 35;
-                    enemy.health -= damageToEnemy; 
-                    player.health -= damageToPlayer;
-                    if (player.health <= 0) { 
-                        player.health = 0; 
-                        endGame(); 
-                        break; 
-                    }
+                    enemy.health -= 34; player.health -= 35;
+                    if (player.health <= 0) { player.health = 0; endGame(); break; }
                 }
             }
         }
     }
-
     enemies = enemies.filter(e => e.health > 0 && e.x > -e.width && e.x < canvas.width + e.width && e.y > -e.height && e.y < canvas.height + e.height);
-    
-    abilityParticles.forEach(p => { p.x += p.vx; p.y += p.vy; p.life--; });
+    abilityParticles.forEach(p => { p.x += p.vx * dt; p.y += p.vy * dt; p.life -= deltaTime; });
     abilityParticles = abilityParticles.filter(p => p.life > 0);
-
-    // ATUALIZADO: Pontuação é sempre igual à vida restante.
     score = player.health;
-    
-    time++;
   }
 
+  // ATUALIZADO: Função de desenhar a barra de vida restaurada
   function drawHealthBar(x, y, width, height, health, maxHealth) {
     ctx.fillStyle = '#333';
     ctx.fillRect(x, y, width, height);
@@ -272,6 +268,7 @@ document.addEventListener('DOMContentLoaded', () => {
     ctx.strokeRect(x, y, width, height);
   }
 
+  // ATUALIZADO: Função de desenho principal restaurada
   function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     if (backgroundImage.complete) ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
@@ -307,34 +304,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (gameOver) { ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(0,0, canvas.width, canvas.height); ctx.fillStyle = '#e74c3c'; ctx.font = '48px Arial'; ctx.textAlign = 'center'; ctx.fillText('Fim de Jogo!', canvas.width/2, canvas.height/2); }
   }
-
-  function gameLoop() { if (!gameOver) { update(); draw(); requestAnimationFrame(gameLoop); } }
+  
+  function gameLoop(currentTime) { 
+      if (gameOver) return;
+      if (!lastTime) lastTime = currentTime;
+      const deltaTime = currentTime - lastTime;
+      lastTime = currentTime;
+      update(deltaTime);
+      draw(); 
+      requestAnimationFrame(gameLoop); 
+  }
   
   function endGame() { 
     if (gameOver) return; 
     gameOver = true; 
     clearInterval(enemyInterval); 
-    // ATUALIZADO: Garante que a pontuação final seja a vida no momento do game over
     score = player.health; 
     if (!isTrainingMode) { 
-        saveScoreToSupabase(userId, userName, score); 
+        saveScoreToSupabase(userName, score); 
     } 
     restartButton.style.display = 'block'; 
   }
 
   function resetGame() { 
-      gameOver = false; 
-      time = 0; 
-      score = 0; 
-      enemies = []; 
-      abilityParticles = []; 
-      player.x = canvas.width/2 - 49; 
-      player.y = canvas.height/2 - 49; 
-      player.health = player.maxHealth; 
-      restartButton.style.display = 'none'; 
-      clearInterval(enemyInterval); 
-      enemyCount = 0; 
-      abilityUsed = false; 
+      gameOver = false; score = 0; enemies = []; abilityParticles = []; 
+      player.x = canvas.width/2 - 49; player.y = canvas.height/2 - 49; player.health = player.maxHealth; 
+      restartButton.style.display = 'none'; clearInterval(enemyInterval); enemyCount = 0; abilityUsed = false; 
       Object.keys(keys).forEach(k => keys[k] = false); 
       showScreen('select'); 
   }
@@ -343,17 +338,22 @@ document.addEventListener('DOMContentLoaded', () => {
     option.addEventListener('click', function() {
       selectedCharacterId = this.id;
       playerImage.src = this.dataset.image;
-      if (selectedCharacterId === 'character1') { extraLife = true; player.speed = 5; } 
-      else if (selectedCharacterId === 'character2') { player.speed = 5 * 1.40; extraLife = false; } 
-      else { player.speed = 5; extraLife = false; abilityUsed = false; }
-      if (!userName && !isTrainingMode) { userName = prompt('Digite seu nome para o ranking:') || 'Anônimo'; userId = Date.now().toString(); } 
-      else if (isTrainingMode) { userName = 'Treino'; }
+      player.speed = 300;
+      if (selectedCharacterId === 'character1') extraLife = true;
+      else if (selectedCharacterId === 'character2') { player.speed *= 1.40; extraLife = false; } 
+      else { extraLife = false; abilityUsed = false; }
       showScreen('game'); startGame();
     });
   });
 
-  loginBtn.addEventListener('click', () => { isTrainingMode = false; showScreen('select'); });
-  trainingBtn.addEventListener('click', () => { isTrainingMode = true; showScreen('select'); });
+  loginBtn.addEventListener('click', () => {
+    const name = prompt('Digite seu nome para o ranking:');
+    userName = (name && name.trim()) ? name.trim() : 'Anônimo';
+    isTrainingMode = false;
+    showScreen('select');
+  });
+  trainingBtn.addEventListener('click', () => { isTrainingMode = true; userName = 'Treino'; showScreen('select'); });
+
   backToStartBtn.addEventListener('click', () => showScreen('start'));
   leaderboardButton.addEventListener('click', () => showScreen('leaderboard'));
   leaderboardReload.addEventListener('click', loadTop3);
