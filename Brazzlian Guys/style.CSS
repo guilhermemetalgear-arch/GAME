@@ -76,7 +76,7 @@ body {
   align-items: center;
   height: 100vh;
   margin: 0;
-  background-image: url('https://i.postimg.cc/85Y9Txrd/Cristo-Redentor.webp');
+  background-image: url('https://i.postimg.cc/15XjnvyY/Chat-GPT-Image-28-de-ago-de-2025-22-37-34.png');
   background-size: cover;
   background-position: center center;
   background-repeat: no-repeat;
@@ -106,13 +106,18 @@ body {
   font-size: 1.5em;
 }
 
+.character-select-content {
+  display: flex;
+  gap: 30px;
+  align-items: flex-start;
+}
+
 .character-grid {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   gap: 25px;
-  width: 100%;
 }
 
 .character-option {
@@ -134,8 +139,50 @@ body {
 .character-option h3 { margin: 10px 0 5px; font-size: 1.2em; }
 .character-option p { margin: 0; font-size: 0.9em; }
 
+/* NOVO: Painel de Virtudes */
+#virtues-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background-color: rgba(44, 62, 80, 0.8);
+  padding: 15px;
+  border-radius: 10px;
+  border: 2px solid #9b59b6;
+}
+#virtues-panel h4 {
+  margin: 0 0 10px;
+  text-align: center;
+  font-size: 1.2em;
+  color: #ecf0f1;
+}
+.virtue-option {
+  background-color: #34495e;
+  padding: 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: border-color 0.3s ease;
+  width: 200px;
+}
+.virtue-option:hover {
+  border-color: #f1c40f;
+}
+.virtue-option.selected {
+  border-color: #2ecc71;
+  background-color: #486581;
+}
+.virtue-option h5 {
+  margin: 0 0 5px;
+  font-size: 1em;
+  color: #fff;
+}
+.virtue-option p {
+  margin: 0;
+  font-size: 0.85em;
+  color: #bdc3c7;
+}
 
-/* ATUALIZADO: Estilos para o container dos botões Voltar e Ranking */
+
 .character-select-actions {
   display: flex;
   gap: 15px;
@@ -156,14 +203,14 @@ body {
 }
 
 #backToStartBtn {
-  background-color: #c0392b; /* Vermelho */
+  background-color: #c0392b;
 }
 #backToStartBtn:hover {
   background-color: #e74c3c;
 }
 
 #leaderboardButton {
-  background-color: #8e44ad; /* Roxo */
+  background-color: #8e44ad;
 }
 #leaderboardButton:hover {
   filter: brightness(1.1);
@@ -203,31 +250,127 @@ body {
 .lb-back { background: #27ae60; color: #fff; }
 
 /* ====== Jogo ====== */
-#game-container { position: relative; margin-top: 20px; background-color: rgba(52, 73, 94, 0.8); max-width: 95vw; max-height: 80vh; display: flex; justify-content: center; align-items: center; }
-canvas { background-color: transparent; border: 2px solid #ecf0f1; max-width: 100%; max-height: 100%; touch-action: none; }
+#game-and-ui-wrapper {
+  display: none; /* Alterado para controlar a visibilidade do conjunto */
+  flex-direction: column;
+  margin-top: 20px;
+  background-color: rgba(52, 73, 94, 0.8);
+  max-width: 95vw;
+}
+
+#game-container { 
+  position: relative; 
+  display: flex; 
+  justify-content: center; 
+  align-items: center; 
+  width: 100%;
+}
+canvas { 
+  background-color: transparent; 
+  border: 2px solid #ecf0f1; 
+  border-bottom: none; /* Remove a borda inferior para conectar com a UI bar */
+  max-width: 100%; 
+  max-height: 80vh; 
+  touch-action: none; 
+}
 #restartButton { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 10px 20px; font-size: 16px; cursor: pointer; background-color: #27ae60; color: #fff; border: none; border-radius: 5px; display: none; z-index: 10; }
 
+/* NOVA UI DO JOGO - Barra Inferior Agrupada */
+#game-ui-bottom-bar {
+  padding: 10px;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  border: 2px solid #ecf0f1;
+  border-top: 2px solid #566573;
+}
+
+#character-portrait-container {
+  width: 168px; /* Aumento de 100% (84px -> 168px) */
+  height: 168px;
+  border: 3px solid #3498db;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #2c3e50;
+  flex-shrink: 0;
+}
+#portrait-img { width: 100%; height: 100%; object-fit: cover; }
+
+#powers-container {
+  display: flex;
+  gap: 15px;
+}
+.power-box {
+  width: 60px;
+  height: 60px;
+  background-color: rgba(44, 62, 80, 0.9);
+  border: 2px solid #8e44ad;
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 12px;
+  font-weight: bold;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+}
+.power-name { padding: 5px; text-align: center; }
+.cooldown-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 20px;
+  color: #e74c3c;
+  transition: opacity 0.2s;
+  opacity: 0;
+  pointer-events: none;
+}
+.cooldown-overlay.active { opacity: 1; }
+
 /* ====== Controles mobile ====== */
-#controls { display: flex; justify-content: center; align-items: center; margin-top: 40px; gap: 20px; z-index: 20; flex-wrap: wrap; width: 90%; max-width: 600px; }
+#controls { display: none; flex-wrap: wrap; justify-content: center; align-items: center; margin-top: 20px; gap: 20px; z-index: 20; width: 90%; max-width: 600px; }
 .d-pad-keyboard { display: flex; flex-direction: column; align-items: center; gap: 10px; }
 .d-pad-horizontal { display: flex; gap: 10px; justify-content: center; }
-.action-buttons { display: flex; flex-direction: column; gap: 10px; }
-.control-btn { width: 120px; height: 120px; font-size: 54px; font-weight: bold; color: #fff; border: 2px solid #ecf0f1; border-radius: 50%; cursor: pointer; transition: background-color 0.2s ease; user-select: none; }
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  align-items: center;
+}
+.power-buttons-group {
+    display: flex;
+    gap: 10px;
+}
+.control-btn { width: 80px; height: 80px; font-size: 32px; font-weight: bold; color: #fff; border: 2px solid #ecf0f1; border-radius: 50%; cursor: pointer; transition: background-color 0.2s ease; user-select: none; }
 .control-btn:active { filter: brightness(1.2); }
 #up-btn, #down-btn, #left-btn, #right-btn { background-color: #3498db; }
-#z-btn { background-color: #2ecc71; }
+.power-btn { background-color: #2ecc71; }
 #control-restart-btn { background-color: #e74c3c; }
 
 @media (max-width: 900px) {
   .title-logo { height: 160px; }
   .sponsors-grid { grid-template-columns: 1fr; }
+  .character-select-content { flex-direction: column; align-items: center; }
 }
 @media (max-width: 768px) {
   .title-logo { height: 128px; }
-  .control-btn { width: 90px; height: 90px; font-size: 36px; }
+  .control-btn { width: 70px; height: 70px; font-size: 28px; }
 }
 @media (max-width: 480px) {
   .title-logo { height: 96px; }
-  .control-btn { width: 75px; height: 75px; font-size: 30px; }
+  .control-btn { width: 60px; height: 60px; font-size: 24px; }
   #controls { gap: 15px; }
+  #game-ui-bottom-bar { padding: 10px; gap: 10px; flex-direction: column; }
+  #character-portrait-container { width: 120px; height: 120px; }
+  .power-box { width: 50px; height: 50px; font-size: 10px; }
+  .cooldown-overlay { font-size: 16px; }
 }

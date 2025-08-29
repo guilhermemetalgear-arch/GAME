@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const startScreen = document.getElementById('start-screen');
   const characterSelectScreen = document.getElementById('character-select-screen');
   const leaderboardScreen = document.getElementById('leaderboard-screen');
-  const gameContainer = document.getElementById('game-container');
+  const gameAndUiWrapper = document.getElementById('game-and-ui-wrapper');
   const controls = document.getElementById('controls');
   const titleRow = document.querySelector('.title-row');
   const sponsorsSection = document.getElementById('sponsors-section');
@@ -33,8 +33,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const characterOptions = document.querySelectorAll('.character-option');
 
   // Controles
-  const zBtn = document.getElementById('z-btn');
   const controlRestartBtn = document.getElementById('control-restart-btn');
+  const powerBtns = [document.getElementById('power-btn-1'), document.getElementById('power-btn-2'), document.getElementById('power-btn-3')];
+
+  // UI do Jogo
+  const portraitImg = document.getElementById('portrait-img');
+  const powerBoxes = [document.getElementById('power-1'), document.getElementById('power-2'), document.getElementById('power-3')];
+  
+  // Virtudes
+  const virtueOptions = document.querySelectorAll('.virtue-option');
+  let selectedVirtue = null;
 
   // Estado do jogo
   let selectedCharacterId = null;
@@ -44,9 +52,16 @@ document.addEventListener('DOMContentLoaded', () => {
   let userName = null;
   let score = 0;
   let isTrainingMode = false;
-  let lastTime = 0; // Para o delta time
+  let lastTime = 0; 
+  let projectiles = [];
+  let projectileImage = new Image();
+  let powers = [
+    { name: 'Poder 1', cooldown: 500, lastUsed: 0, effect: () => {} },
+    { name: 'Poder 2', cooldown: 3000, lastUsed: 0, effect: () => {} },
+    { name: 'Poder 3', cooldown: 3000, lastUsed: 0, effect: () => {} }
+  ];
 
-  function resizeCanvas() { canvas.width = 1000; canvas.height = 800; }
+  function resizeCanvas() { canvas.width = 1000; canvas.height = 700; }
   resizeCanvas();
   
   const backgroundImage = new Image();
@@ -57,25 +72,24 @@ document.addEventListener('DOMContentLoaded', () => {
   thunderImg.src = 'https://i.postimg.cc/jSqr4b9t/Pngtree-thunder-and-bolt-flash-vector-4723241.png';
   let abilityParticles = [];
   
-  // ATUALIZADO: URL do primeiro inimigo alterada
-  const enemyURLs = ['https://i.postimg.cc/BnTF8rms/Chat-GPT-Image-27-de-ago-de-2025-22-51-05.png','https://i.postimg.cc/3rcYwcHc/blusinha.png','https://i.postimg.cc/bv92cjWM/3.jpg','https://i.postimg.cc/tgz7mQMg/Ovos-PNG-Transparente-Sem-Fundo.png','https://i.postimg.cc/Y0h4WL0K/6.jpg','https://i.postimg.cc/hG3R7qvv/33.jpg','https://i.postimg.cc/3rcYwcHc/blusinha.png','https://i.postimg.cc/bv92cjWM/3.jpg','https://i.postimg.cc/tgz7mQMg/Ovos-PNG-Transparente-Sem-Fundo.png','https://i.postimg.cc/Y0h4WL0K/6.jpg'];
+  const enemyURLs = ['https://i.postimg.cc/BnTF8rms/Chat-GPT-Image-27-de-ago-de-2025-22-51-05.png','https://i.postimg.cc/3rcYwcHc/blusinha.png','https://i.postimg.cc/Cx4xQMf2/Chat-GPT-Image-28-de-ago-de-2025-22-02-28.png','https://i.postimg.cc/GmK5f63K/Chat-GPT-Image-28-de-ago-de-2025-22-02-37.png','https://i.postimg.cc/25vByNqF/Chat-GPT-Image-28-de-ago-de-2025-22-02-31.png','https://i.postimg.cc/hG3R7qvv/33.jpg','https://i.postimg.cc/3rcYwcHc/blusinha.png','https://i.postimg.cc/Cx4xQMf2/Chat-GPT-Image-28-de-ago-de-2025-22-02-28.png','https://i.postimg.cc/GmK5f63K/Chat-GPT-Image-28-de-ago-de-2025-22-02-37.png','https://i.postimg.cc/25vByNqF/Chat-GPT-Image-28-de-ago-de-2025-22-02-31.png'];
   const movementPatterns = [{ dx: 2, dy: 0 },{ dx: 0, dy: 2 },{ dx: 1.5, dy: 1.5 },{ dx: 3, dy: 0 },{ dx: 1, dy: -2 },{ dx: -1.5, dy: 1.5 },{ dx: 2.5, dy: -1 },{ dx: -2, dy: -2 },{ dx: 3, dy: 3 },{ dx: -3, dy: 0 }];
   const spawnWaves = [{ typeIndex: 0, side: 0, startX: 0, startY: 300 },{ typeIndex: 5, side: 1, startX: 1000, startY: 500 },{ typeIndex: 7, side: 2, startX: 400, startY: 800 },{ typeIndex: 8, side: 3, startX: 0, startY: 100 },{ typeIndex: 9, side: 0, startX: 500, startY: 0 },{ typeIndex: 1, side: 1, startX: 1000, startY: 200 },{ typeIndex: 2, side: 2, startX: 250, startY: 800 },{ typeIndex: 3, side: 3, startX: 0, startY: 600 },{ typeIndex: 4, side: 0, startX: 750, startY: 0 },{ typeIndex: 6, side: 1, startX: 1000, startY: 450 }];
 
-  let player = { x: canvas.width/2 - 49, y: canvas.height/2 - 49, width: 98, height: 98, speed: 300, health: 100, maxHealth: 100, lastHitTime: 0 }; // Velocidade em pixels/segundo
+  let player = { x: canvas.width/2 - 49, y: canvas.height/2 - 49, width: 98, height: 98, speed: 300, health: 100, maxHealth: 100, visualHealth: 100, lastHitTime: 0, damageBonus: 0, damageReduction: 0 };
   let enemies = [];
   let gameOver = false;
   let enemyInterval;
   const keys = {};
 
   function showScreen(screen) {
-      [startScreen, characterSelectScreen, leaderboardScreen, gameContainer, controls, titleRow, sponsorsSection].forEach(s => s.style.display = 'none');
+      [startScreen, characterSelectScreen, leaderboardScreen, gameAndUiWrapper, controls, titleRow, sponsorsSection].forEach(s => s.style.display = 'none');
       if (screen === 'select') {
           characterSelectScreen.style.display = 'flex';
           titleRow.style.display = 'flex';
           sponsorsSection.style.display = 'block';
       } else if (screen === 'game') {
-          gameContainer.style.display = 'flex';
+          gameAndUiWrapper.style.display = 'flex';
           controls.style.display = 'flex';
       } else if (screen === 'leaderboard') {
           leaderboardScreen.style.display = 'block';
@@ -91,25 +105,17 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
           const response = await fetch(endpoint);
           if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
-          
           const result = await response.json();
           const scores = result.data || [];
-
           leaderboardList.innerHTML = '';
-          
           if (scores.length === 0) {
               leaderboardList.innerHTML = '<div class="lb-item muted">Nenhuma pontuação registrada.</div>';
               return;
           }
-
           scores.forEach((entry, index) => {
               const item = document.createElement('div');
               item.className = 'lb-item';
-              item.innerHTML = `
-                  <div class="lb-pos">${index + 1}</div>
-                  <div class="lb-name">${entry.user_name || 'Anônimo'}</div>
-                  <div class="lb-score">${entry.points}</div>
-              `;
+              item.innerHTML = `<div class="lb-pos">${index + 1}</div><div class="lb-name">${entry.user_name || 'Anônimo'}</div><div class="lb-score">${entry.points}</div>`;
               leaderboardList.appendChild(item);
           });
       } catch (error) {
@@ -127,9 +133,29 @@ document.addEventListener('DOMContentLoaded', () => {
       abilityParticles.push({ x: startX, y: startY, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, life: life, maxLife: life, size: 60 });
     }
   }
+  
+  function fireProjectile() {
+    let dx = 0, dy = 0;
+    if (keys['arrowup'] || keys['w']) dy -= 1;
+    if (keys['arrowdown'] || keys['s']) dy += 1;
+    if (keys['arrowleft'] || keys['a']) dx -= 1;
+    if (keys['arrowright'] || keys['d']) dx += 1;
+    if (dx === 0 && dy === 0) dy = -1;
 
-  function activateAbility() {
-    if (selectedCharacterId === 'character3' && !abilityUsed) {
+    const len = Math.hypot(dx, dy);
+    const projectileSpeed = 800;
+    projectiles.push({
+        x: player.x + player.width / 2 - 15,
+        y: player.y + player.height / 2 - 15,
+        width: 30,
+        height: 30,
+        vx: (dx / len) * projectileSpeed,
+        vy: (dy / len) * projectileSpeed
+    });
+  }
+
+  function activateJoaoAbility() {
+      if (selectedCharacterId === 'character3' && !abilityUsed) {
         spawnAbilityBurst();
         const range = 200;
         enemies.forEach(enemy => {
@@ -141,11 +167,23 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
   
+  function activatePower(index) {
+      if (gameOver) return;
+      const now = Date.now();
+      const power = powers[index];
+      if (now - power.lastUsed >= power.cooldown) {
+          power.effect();
+          power.lastUsed = now;
+      }
+  }
+
   window.addEventListener('keydown', (e) => {
     const key = e.key.toLowerCase();
-    if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', ' ', 'z'].includes(key)) e.preventDefault();
+    if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', ' '].includes(key)) e.preventDefault();
     if (['w', 'a', 's', 'd'].includes(key)) return;
-    if (key === 'z') activateAbility();
+    if (key === 'z') activatePower(0);
+    if (key === 'x') activatePower(1);
+    if (key === 'c') activatePower(2);
     keys[key] = true;
     if (e.key === ' ') resetGame();
   });
@@ -162,13 +200,14 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.addEventListener('touchstart', (e) => { e.preventDefault(); keys[key] = true; }, { passive: false });
         btn.addEventListener('touchend', (e) => { e.preventDefault(); keys[key] = false; }, { passive: false });
     }
-    zBtn.addEventListener('touchstart', (e) => { e.preventDefault(); activateAbility(); }, { passive: false });
+    powerBtns.forEach((btn, index) => {
+        btn.addEventListener('touchstart', (e) => { e.preventDefault(); activatePower(index); }, { passive: false });
+    });
     controlRestartBtn.addEventListener('touchstart', (e) => { e.preventDefault(); resetGame(); }, { passive: false });
   }
 
   async function saveScoreToSupabase(name, points) {
       const endpoint = '/.netlify/functions/submit-score';
-      console.log(`Enviando pontuação para ${endpoint}:`, { name, points });
       try {
         const response = await fetch(endpoint, {
           method: 'POST',
@@ -179,8 +218,6 @@ document.addEventListener('DOMContentLoaded', () => {
           const errorData = await response.json();
           throw new Error(errorData.error || `Erro HTTP: ${response.status}`);
         }
-        const result = await response.json();
-        console.log('Pontuação salva com sucesso:', result);
       } catch (error) {
         console.error('Falha ao salvar pontuação:', error);
       }
@@ -221,12 +258,18 @@ document.addEventListener('DOMContentLoaded', () => {
     if (gameOver) return;
     const dt = deltaTime / 1000;
 
+    // Lógica de suavização da barra de vida
+    if (Math.abs(player.health - player.visualHealth) < 0.1) {
+        player.visualHealth = player.health;
+    } else {
+        player.visualHealth += (player.health - player.visualHealth) * 0.1;
+    }
+
     let dx = 0, dy = 0;
     if (keys['arrowup'] || keys['w']) dy -= 1;
     if (keys['arrowdown'] || keys['s']) dy += 1;
     if (keys['arrowleft'] || keys['a']) dx -= 1;
     if (keys['arrowright'] || keys['d']) dx += 1;
-
     const len = Math.hypot(dx, dy);
     if (len > 0) {
       player.x += (dx / len) * player.speed * dt;
@@ -245,19 +288,54 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (selectedCharacterId === 'character1' && extraLife) { 
                     extraLife = false; enemy.health = 0; 
                 } else {
-                    enemy.health -= 34; player.health -= 35;
+                    const damageToPlayer = 35 * (1 - player.damageReduction);
+                    const damageToEnemy = 34 * (1 + player.damageBonus);
+                    enemy.health -= damageToEnemy;
+                    player.health -= damageToPlayer;
                     if (player.health <= 0) { player.health = 0; endGame(); break; }
                 }
             }
         }
     }
+    
+    for (let pIndex = projectiles.length - 1; pIndex >= 0; pIndex--) {
+        const p = projectiles[pIndex];
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        let hit = false;
+        for (let eIndex = enemies.length - 1; eIndex >= 0; eIndex--) {
+            const enemy = enemies[eIndex];
+            if (p.x < enemy.x + enemy.width && p.x + p.width > enemy.x && p.y < enemy.y + enemy.height && p.y + p.height > enemy.y) {
+                enemy.health -= 100;
+                hit = true;
+                break; 
+            }
+        }
+        if (hit || p.x < -p.width || p.x > canvas.width || p.y < -p.height || p.y > canvas.height) {
+            projectiles.splice(pIndex, 1);
+        }
+    }
+
     enemies = enemies.filter(e => e.health > 0 && e.x > -e.width && e.x < canvas.width + e.width && e.y > -e.height && e.y < canvas.height + e.height);
     abilityParticles.forEach(p => { p.x += p.vx * dt; p.y += p.vy * dt; p.life -= deltaTime; });
     abilityParticles = abilityParticles.filter(p => p.life > 0);
-    score = player.health;
+    score = Math.round(player.health);
+
+    const currentTime = Date.now();
+    powers.forEach((power, index) => {
+        const remaining = (power.lastUsed + power.cooldown - currentTime) / 1000;
+        const overlay = powerBoxes[index].querySelector('.cooldown-overlay');
+        const timeEl = powerBoxes[index].querySelector('.cooldown-time');
+        if (remaining > 0) {
+            overlay.classList.add('active');
+            timeEl.textContent = remaining.toFixed(1);
+        } else {
+            overlay.classList.remove('active');
+            timeEl.textContent = '';
+        }
+    });
   }
 
-  // ATUALIZADO: Função de desenhar a barra de vida restaurada
   function drawHealthBar(x, y, width, height, health, maxHealth) {
     ctx.fillStyle = '#333';
     ctx.fillRect(x, y, width, height);
@@ -268,11 +346,16 @@ document.addEventListener('DOMContentLoaded', () => {
     ctx.strokeRect(x, y, width, height);
   }
 
-  // ATUALIZADO: Função de desenho principal restaurada
   function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     if (backgroundImage.complete) ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
     
+    if (projectileImage.complete && projectileImage.naturalHeight !== 0) {
+        projectiles.forEach(p => {
+            ctx.drawImage(projectileImage, p.x, p.y, p.width, p.height);
+        });
+    }
+
     abilityParticles.forEach(p => {
         const t = p.life / p.maxLife;
         const size = p.size * t;
@@ -297,10 +380,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     ctx.fillStyle = '#ecf0f1'; ctx.font = '24px Arial'; ctx.textAlign = 'left';
     ctx.fillText(`Pontuação: ${score}`, 10, 30);
-    ctx.fillText(`Vida:`, 10, 60);
-    drawHealthBar(70, 45, 200, 20, player.health, player.maxHealth);
-    if (selectedCharacterId === 'character1') ctx.fillText(extraLife ? 'Vida Extra: ATIVA' : 'Vida Extra: INATIVA', 10, 90);
-    if (selectedCharacterId === 'character3') ctx.fillText(abilityUsed ? 'Habilidade: USADA' : 'Habilidade: DISPONÍVEL (Z)', 10, 120);
+    ctx.fillText(`Vida:`, canvas.width - 300, 30);
+    drawHealthBar(canvas.width - 220, 15, 200, 20, player.visualHealth, player.maxHealth); // Usa visualHealth
+    if (selectedCharacterId === 'character1') ctx.fillText(extraLife ? 'Vida Extra: ATIVA' : 'Vida Extra: INATIVA', canvas.width - 220, 60);
+    if (selectedCharacterId === 'character3') ctx.fillText(abilityUsed ? 'Habilidade (X): USADA' : 'Habilidade (X): DISPONÍVEL', canvas.width - 360, 90);
 
     if (gameOver) { ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(0,0, canvas.width, canvas.height); ctx.fillStyle = '#e74c3c'; ctx.font = '48px Arial'; ctx.textAlign = 'center'; ctx.fillText('Fim de Jogo!', canvas.width/2, canvas.height/2); }
   }
@@ -319,7 +402,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (gameOver) return; 
     gameOver = true; 
     clearInterval(enemyInterval); 
-    score = player.health; 
+    score = Math.round(player.health); 
     if (!isTrainingMode) { 
         saveScoreToSupabase(userName, score); 
     } 
@@ -327,22 +410,62 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function resetGame() { 
-      gameOver = false; score = 0; enemies = []; abilityParticles = []; 
+      gameOver = false; score = 0; enemies = []; abilityParticles = []; projectiles = [];
       player.x = canvas.width/2 - 49; player.y = canvas.height/2 - 49; player.health = player.maxHealth; 
+      player.visualHealth = player.maxHealth; // Reseta a vida visual
       restartButton.style.display = 'none'; clearInterval(enemyInterval); enemyCount = 0; abilityUsed = false; 
       Object.keys(keys).forEach(k => keys[k] = false); 
+      powers.forEach(p => p.lastUsed = 0);
       showScreen('select'); 
   }
   
+  function setupCharacterPowers(characterId) {
+    powers[0] = { name: 'Projétil', cooldown: 500, lastUsed: 0, effect: fireProjectile };
+    powers[1] = { name: 'Poder 2', cooldown: 3000, lastUsed: 0, effect: () => {} };
+    powers[2] = { name: 'Poder 3', cooldown: 3000, lastUsed: 0, effect: () => {} };
+    
+    if (characterId === 'character3') {
+        powers[1].name = "Raio";
+        powers[1].effect = activateJoaoAbility;
+    }
+
+    powerBoxes.forEach((box, index) => {
+        box.querySelector('.power-name').textContent = powers[index].name;
+    });
+  }
+  
+  virtueOptions.forEach(option => {
+      option.addEventListener('click', () => {
+          virtueOptions.forEach(opt => opt.classList.remove('selected'));
+          option.classList.add('selected');
+          selectedVirtue = option;
+      });
+  });
+
   characterOptions.forEach(option => {
     option.addEventListener('click', function() {
       selectedCharacterId = this.id;
       playerImage.src = this.dataset.image;
+      portraitImg.src = this.dataset.portrait;
+      projectileImage.src = this.dataset.projectileImg;
+      
       player.speed = 300;
-      if (selectedCharacterId === 'character1') extraLife = true;
+      player.damageBonus = 0;
+      player.damageReduction = 0;
+      
+      if (selectedCharacterId === 'character1') { extraLife = true; }
       else if (selectedCharacterId === 'character2') { player.speed *= 1.40; extraLife = false; } 
       else { extraLife = false; abilityUsed = false; }
-      showScreen('game'); startGame();
+      
+      if (selectedVirtue) {
+          player.speed *= (1 + parseFloat(selectedVirtue.dataset.speed));
+          player.damageBonus += parseFloat(selectedVirtue.dataset.damage);
+          player.damageReduction += parseFloat(selectedVirtue.dataset.reduction);
+      }
+
+      setupCharacterPowers(selectedCharacterId);
+      showScreen('game'); 
+      startGame();
     });
   });
 

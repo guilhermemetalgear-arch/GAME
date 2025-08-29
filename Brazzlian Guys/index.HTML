@@ -31,24 +31,45 @@
 
   <div id="character-select-screen" style="display: none;">
     <h2>Escolha seu Personagem</h2>
-    
-    <div class="character-grid">
-      <div class="character-option" id="character1" data-image="https://i.postimg.cc/wjMbqBwn/Chat-GPT-Image-27-de-ago-de-2025-22-22-04.png">
-        <img src="https://i.postimg.cc/wjMbqBwn/Chat-GPT-Image-27-de-ago-de-2025-22-22-04.png" alt="Personagem 1" width="98" height="98">
-        <h3>Maria</h3>
-        <p>Resistência ao primeiro contato (chance extra)</p>
-      </div>
+    <div class="character-select-content">
+      <div class="character-grid">
+        <div class="character-option" id="character1" data-image="https://i.postimg.cc/wjMbqBwn/Chat-GPT-Image-27-de-ago-de-2025-22-22-04.png" data-portrait="URL_RETRATO_AQUI_1" data-projectile-img="https://i.postimg.cc/8PmG1KPJ/Pngtree-pink-heart-icon-20522142.png">
+          <img src="https://i.postimg.cc/wjMbqBwn/Chat-GPT-Image-27-de-ago-de-2025-22-22-04.png" alt="Personagem 1" width="98" height="98">
+          <h3>Maria</h3>
+          <p>Resistência ao primeiro contato (chance extra)</p>
+        </div>
 
-      <div class="character-option" id="character2" data-image="https://i.postimg.cc/W3bm57SQ/Pngtree-3d-delivery-man-red-scooter-14434092.png">
-        <img src="https://i.postimg.cc/W3bm57SQ/Pngtree-3d-delivery-man-red-scooter-14434092.png" alt="Personagem 2" width="98" height="98">
-        <h3>Motoboy</h3>
-        <p>Velocidade de +40%</p>
-      </div>
+        <div class="character-option" id="character2" data-image="https://i.postimg.cc/W3bm57SQ/Pngtree-3d-delivery-man-red-scooter-14434092.png" data-portrait="URL_RETRATO_AQUI_2" data-projectile-img="URL_PROJETIL_AQUI_2">
+          <img src="https://i.postimg.cc/W3bm57SQ/Pngtree-3d-delivery-man-red-scooter-14434092.png" alt="Personagem 2" width="98" height="98">
+          <h3>Motoboy</h3>
+          <p>Velocidade de +40%</p>
+        </div>
 
-      <div class="character-option" id="character3" data-image="https://i.postimg.cc/zGRckx63/20250824-1543-Cheerful-Cartoon-Wave-simple-compose-01k3ep8xhjfje80vm60yp9h9x4.gif">
-        <img src="https://i.postimg.cc/zGRckx63/20250824-1543-Cheerful-Cartoon-Wave-simple-compose-01k3ep8xhjfje80vm60yp9h9x4.gif" alt="Personagem 3" width="98" height="98">
-        <h3>João</h3>
-        <p>Aperte Z e elimine os inimigos em um raio de ação (1 uso por partida)</p>
+        <div class="character-option" id="character3" data-image="https://i.postimg.cc/zGRckx63/20250824-1543-Cheerful-Cartoon-Wave-simple-compose-01k3ep8xhjfje80vm60yp9h9x4.gif" data-portrait="URL_RETRATO_AQUI_3" data-projectile-img="URL_PROJETIL_AQUI_3">
+          <img src="https://i.postimg.cc/zGRckx63/20250824-1543-Cheerful-Cartoon-Wave-simple-compose-01k3ep8xhjfje80vm60yp9h9x4.gif" alt="Personagem 3" width="98" height="98">
+          <h3>João</h3>
+          <p>Aperte Z e elimine os inimigos em um raio de ação (1 uso por partida)</p>
+        </div>
+      </div>
+      
+      <div id="virtues-panel">
+        <h4>4 Virtudes Cardeais</h4>
+        <div class="virtue-option" data-speed="0.20" data-damage="0" data-reduction="0">
+          <h5>Coragem</h5>
+          <p>+20% de Velocidade</p>
+        </div>
+        <div class="virtue-option" data-speed="0.10" data-damage="0.10" data-reduction="0">
+          <h5>Prudência</h5>
+          <p>+10% de Dano, +10% de Velocidade</p>
+        </div>
+        <div class="virtue-option" data-speed="0" data-damage="0" data-reduction="0.20">
+          <h5>Fortaleza</h5>
+          <p>-20% de Dano Recebido</p>
+        </div>
+        <div class="virtue-option" data-speed="0.05" data-damage="0.05" data-reduction="0.05">
+          <h5>Temperança</h5>
+          <p>+5% Dano, +5% Vel., -5% Dano Recebido</p>
+        </div>
       </div>
     </div>
 
@@ -79,11 +100,38 @@
     </div>
   </div>
 
-  <div id="game-container" style="display: none;">
-    <canvas id="gameCanvas"></canvas>
-    <button id="restartButton">Reiniciar Jogo</button>
+  <div id="game-and-ui-wrapper" style="display: none;">
+    <div id="game-container">
+      <canvas id="gameCanvas"></canvas>
+      <button id="restartButton">Reiniciar Jogo</button>
+    </div>
+    <div id="game-ui-bottom-bar">
+      <div id="character-portrait-container">
+        <img id="portrait-img" src="" alt="Retrato do Personagem">
+      </div>
+      <div id="powers-container">
+        <div class="power-box" id="power-1">
+          <span class="power-name"></span>
+          <div class="cooldown-overlay">
+            <span class="cooldown-time"></span>
+          </div>
+        </div>
+        <div class="power-box" id="power-2">
+          <span class="power-name"></span>
+          <div class="cooldown-overlay">
+            <span class="cooldown-time"></span>
+          </div>
+        </div>
+        <div class="power-box" id="power-3">
+          <span class="power-name"></span>
+          <div class="cooldown-overlay">
+            <span class="cooldown-time"></span>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
-
+  
   <div id="controls" style="display: none;">
     <div class="d-pad-keyboard">
       <button class="control-btn" id="up-btn">▲</button>
@@ -94,8 +142,12 @@
       </div>
     </div>
     <div class="action-buttons">
-      <button class="control-btn" id="z-btn">Z</button>
-      <button class="control-btn" id="control-restart-btn">⟳</button>
+        <div class="power-buttons-group">
+            <button class="control-btn power-btn" id="power-btn-1">P1</button>
+            <button class="control-btn power-btn" id="power-btn-2">P2</button>
+            <button class="control-btn power-btn" id="power-btn-3">P3</button>
+        </div>
+        <button class="control-btn" id="control-restart-btn">⟳</button>
     </div>
   </div>
 
