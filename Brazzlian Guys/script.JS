@@ -55,6 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let lastTime = 0; 
   let projectiles = [];
   let projectileImage = new Image();
+  const projectileBaseSize = 30; // base; Maria usa 3x
   let powers = [
     { name: 'Poder 1', cooldown: 500, lastUsed: 0, effect: () => {} },
     { name: 'Poder 2', cooldown: 3000, lastUsed: 0, effect: () => {} },
@@ -65,7 +66,9 @@ document.addEventListener('DOMContentLoaded', () => {
   resizeCanvas();
   
   const backgroundImage = new Image();
-  backgroundImage.src = 'https://i.postimg.cc/c19wL0CG/1-rocinha-favela-closeup.jpg';
+  // ⬇️ Fundo do JOGO (canvas) pela URL solicitada
+  backgroundImage.src = 'https://i.postimg.cc/mr63SMxw/Chat-GPT-Image-29-de-ago-de-2025-19-31-17.png';
+
   const playerImage = new Image();
 
   const thunderImg = new Image();
@@ -109,7 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const scores = result.data || [];
           leaderboardList.innerHTML = '';
           if (scores.length === 0) {
-              leaderboardList.innerHTML = '<div class="lb-item muted">Nenhuma pontuação registrada.</div>';
+              leaderboardList.innerHTML = '<div class="lb-item muted">Nenhuma pontuação registrado.</div>';
               return;
           }
           scores.forEach((entry, index) => {
@@ -144,11 +147,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const len = Math.hypot(dx, dy);
     const projectileSpeed = 800;
+    const size = (selectedCharacterId === 'character1') ? projectileBaseSize * 3 : projectileBaseSize; // Maria 200% a mais (3x)
     projectiles.push({
-        x: player.x + player.width / 2 - 15,
-        y: player.y + player.height / 2 - 15,
-        width: 30,
-        height: 30,
+        x: player.x + player.width / 2 - size / 2,
+        y: player.y + player.height / 2 - size / 2,
+        width: size,
+        height: size,
         vx: (dx / len) * projectileSpeed,
         vy: (dy / len) * projectileSpeed
     });
@@ -181,9 +185,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const key = e.key.toLowerCase();
     if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', ' '].includes(key)) e.preventDefault();
     if (['w', 'a', 's', 'd'].includes(key)) return;
-    if (key === 'z') activatePower(0);
-    if (key === 'x') activatePower(1);
-    if (key === 'c') activatePower(2);
+
+    // P1 não dispara pelo teclado
+    // if (key === 'z' || key === '1') activatePower(0);
+
+    // Mantidos: P2 e P3 por teclado (X/2 e C/3)
+    if (key === 'x' || key === '2') activatePower(1);
+    if (key === 'c' || key === '3') activatePower(2);
+
     keys[key] = true;
     if (e.key === ' ') resetGame();
   });
@@ -199,11 +208,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const btn = document.getElementById(btnId);
         btn.addEventListener('touchstart', (e) => { e.preventDefault(); keys[key] = true; }, { passive: false });
         btn.addEventListener('touchend', (e) => { e.preventDefault(); keys[key] = false; }, { passive: false });
+        // também funciona com mouse (se precisar)
+        btn.addEventListener('mousedown', (e) => { e.preventDefault(); keys[key] = true; });
+        btn.addEventListener('mouseup', (e) => { e.preventDefault(); keys[key] = false; });
+        btn.addEventListener('mouseleave', (e) => { e.preventDefault(); keys[key] = false; });
     }
+    // P1/P2/P3 no MOBILE (e também no mouse/desktop)
     powerBtns.forEach((btn, index) => {
         btn.addEventListener('touchstart', (e) => { e.preventDefault(); activatePower(index); }, { passive: false });
+        btn.addEventListener('click', (e) => { e.preventDefault(); activatePower(index); });
     });
     controlRestartBtn.addEventListener('touchstart', (e) => { e.preventDefault(); resetGame(); }, { passive: false });
+    controlRestartBtn.addEventListener('click', (e) => { e.preventDefault(); resetGame(); });
   }
 
   async function saveScoreToSupabase(name, points) {
@@ -383,7 +399,7 @@ document.addEventListener('DOMContentLoaded', () => {
     ctx.fillText(`Vida:`, canvas.width - 300, 30);
     drawHealthBar(canvas.width - 220, 15, 200, 20, player.visualHealth, player.maxHealth); // Usa visualHealth
     if (selectedCharacterId === 'character1') ctx.fillText(extraLife ? 'Vida Extra: ATIVA' : 'Vida Extra: INATIVA', canvas.width - 220, 60);
-    if (selectedCharacterId === 'character3') ctx.fillText(abilityUsed ? 'Habilidade (X): USADA' : 'Habilidade (X): DISPONÍVEL', canvas.width - 360, 90);
+    if (selectedCharacterId === 'character3') ctx.fillText(abilityUsed ? 'Habilidade (3): USADA' : 'Habilidade (3): DISPONÍVEL', canvas.width - 360, 90);
 
     if (gameOver) { ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(0,0, canvas.width, canvas.height); ctx.fillStyle = '#e74c3c'; ctx.font = '48px Arial'; ctx.textAlign = 'center'; ctx.fillText('Fim de Jogo!', canvas.width/2, canvas.height/2); }
   }
@@ -420,13 +436,14 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   
   function setupCharacterPowers(characterId) {
+    // ⬇️ P1 = Projétil; P2 = a definir; P3 = Especial do personagem
     powers[0] = { name: 'Projétil', cooldown: 500, lastUsed: 0, effect: fireProjectile };
     powers[1] = { name: 'Poder 2', cooldown: 3000, lastUsed: 0, effect: () => {} };
-    powers[2] = { name: 'Poder 3', cooldown: 3000, lastUsed: 0, effect: () => {} };
+    powers[2] = { name: 'Especial', cooldown: 3000, lastUsed: 0, effect: () => {} };
     
     if (characterId === 'character3') {
-        powers[1].name = "Raio";
-        powers[1].effect = activateJoaoAbility;
+        powers[2].name = "Especial (Raio)";
+        powers[2].effect = activateJoaoAbility;
     }
 
     powerBoxes.forEach((box, index) => {
@@ -446,8 +463,9 @@ document.addEventListener('DOMContentLoaded', () => {
     option.addEventListener('click', function() {
       selectedCharacterId = this.id;
       playerImage.src = this.dataset.image;
-      portraitImg.src = this.dataset.portrait;
-      projectileImage.src = this.dataset.projectileImg;
+      portraitImg.src = this.dataset.portrait;           // ← retrato só na tela de jogo
+      projectileImage = new Image();
+      projectileImage.src = this.dataset.projectileImg;  // ← projétil por personagem
       
       player.speed = 300;
       player.damageBonus = 0;
