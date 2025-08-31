@@ -2,15 +2,24 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0, viewport-fit=cover">
   <title>BRAZILLIAN GUY - THE GAME</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body ontouchstart="">
+  <!-- Badge global no canto superior esquerdo -->
+  <div id="global-user-display" aria-live="polite"></div>
+
   <div id="start-screen">
     <div class="start-card">
       <h1>BRAZILLIAN GUY</h1>
       <p>A jornada vai começar. Você está pronto?</p>
+
+      <!-- Campo de login na tela inicial -->
+      <div class="start-login-row">
+        <input id="userNameInput" type="text" placeholder="Digite seu login (ex.: GUI)" autocomplete="nickname" />
+      </div>
+
       <div class="start-buttons">
         <button id="login-btn">Efetuar Login</button>
         <button id="training-btn">Treinar</button>
@@ -30,10 +39,10 @@
   </div>
 
   <div id="character-select-screen" style="display: none;">
+    <div id="user-name-display"></div>
     <h2>Escolha seu Personagem</h2>
     <div class="character-select-content">
       <div class="character-grid">
-        <!-- MARIA -->
         <div
           class="character-option"
           id="character1"
@@ -46,7 +55,6 @@
           <p>Resistência ao primeiro contato (chance extra)</p>
         </div>
 
-        <!-- MOTOBOY -->
         <div
           class="character-option"
           id="character2"
@@ -59,7 +67,6 @@
           <p>Velocidade de +40%</p>
         </div>
 
-        <!-- JOÃO -->
         <div
           class="character-option"
           id="character3"
@@ -98,7 +105,6 @@
       <button id="backToStartBtn" class="back-button">Voltar</button>
       <button id="leaderboardButton" title="Ver top 3 pontuações">Ranking</button>
     </div>
-
   </div>
 
   <section id="sponsors-section" aria-label="Patrocinadores" style="display: none;">
@@ -124,7 +130,10 @@
   <div id="game-and-ui-wrapper" style="display: none;">
     <div id="game-container">
       <canvas id="gameCanvas"></canvas>
-      <button id="restartButton">Reiniciar Jogo</button>
+      <div id="game-overlay" style="display:none;">
+        <div id="game-over-message"></div>
+        <button id="restartButton">Reiniciar Jogo</button>
+      </div>
     </div>
     <div id="game-ui-bottom-bar">
       <div id="character-portrait-container">
@@ -153,27 +162,27 @@
     </div>
   </div>
   
+  <!-- CONTROLES: Joystick (esquerda) + poderes/restart (direita) -->
   <div id="controls" style="display: none;">
-    <div class="d-pad-keyboard">
-      <button class="control-btn" id="up-btn">▲</button>
-      <div class="d-pad-horizontal">
-        <button class="control-btn" id="left-btn">◀</button>
-        <button class="control-btn" id="down-btn">▼</button>
-        <button class="control-btn" id="right-btn">▶</button>
+    <div class="joystick-col">
+      <div class="joystick-wrapper">
+        <div id="joystick" class="joystick-base">
+          <div class="joystick-handle"></div>
+        </div>
       </div>
     </div>
     <div class="action-buttons">
-        <div class="power-buttons-group">
-            <button class="control-btn power-btn" id="power-btn-1">P1</button>
-            <button class="control-btn power-btn" id="power-btn-2">P2</button>
-            <button class="control-btn power-btn" id="power-btn-3">P3</button>
-        </div>
-        <button class="control-btn" id="control-restart-btn">⟳</button>
+      <div class="power-buttons-group">
+        <button class="control-btn power-btn" id="power-btn-1">P1</button>
+        <button class="control-btn power-btn" id="power-btn-2">P2</button>
+        <button class="control-btn power-btn" id="power-btn-3">P3</button>
+      </div>
+      <button class="control-btn" id="control-restart-btn">⟳</button>
     </div>
   </div>
 
   <audio id="gameMusic" src="https://www.dropbox.com/scl/fi/y1so2um48xj5y9ocw0av2/jogo.mp3?rlkey=jto9dgm5zmieqkp129hq2t2af&st=n4z2x1zs&raw=1" loop></audio>
   <audio id="bg-music" src="https://www.dropbox.com/scl/fi/y1so2um48xj5y9ocw0av2/jogo.mp3?rlkey=jto9dgm5zmieqkp129hq2t2af&st=n4z2x1zs&raw=1" loop></audio>
-  <script src="script.JS"></script>
+  <script src="script.js"></script>
 </body>
 </html>
