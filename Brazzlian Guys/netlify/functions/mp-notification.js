@@ -27,13 +27,17 @@ exports.handler = async (event) => {
              return { statusCode: 400, body: 'Formato da assinatura inválido.' };
         }
 
-        const manifest = `ts:${ts},body:${event.body}`;
+        // CORREÇÃO: A fórmula para criar o "manifest" de verificação foi ajustada.
+        // O Mercado Pago usa um formato específico que combina o ID da notificação e o timestamp.
+        const notificationDataForValidation = JSON.parse(event.body);
+        const manifest = `id:${notificationDataForValidation.data.id};ts:${ts};`;
+        
         const hmac = crypto.createHmac('sha256', secret);
         hmac.update(manifest);
         const generatedSignature = hmac.digest('hex');
 
         if (generatedSignature !== v1) {
-            console.warn('Tentativa de notificação com assinatura inválida!');
+            console.warn('Tentativa de notificação com assinatura inválida! Verifique se a "Assinatura Secreta" na Netlify e no Mercado Pago são IDÊNTICAS.');
             return { statusCode: 401, body: 'Assinatura inválida.' };
         }
     } catch (e) {
@@ -65,41 +69,37 @@ exports.handler = async (event) => {
             const { newUser, newPass } = refData;
 
             if (newUser && newPass) {
-                // CORREÇÃO: Inicializa o cliente do Supabase com as variáveis de ambiente corretas.
-                // É crucial que SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY estejam configuradas no seu painel da Netlify.
                 const supabase = createClient(
                     process.env.SUPABASE_URL, 
                     process.env.SUPABASE_SERVICE_ROLE_KEY
                 );
                 
-                // Tenta inserir o novo usuário na tabela 'usuarios'
                 const { data, error } = await supabase
                     .from('usuarios')
                     .insert([
-                        { login: newUser, senha: newPass } // AVISO: Senha em texto puro!
+                        { login: newUser, senha: newPass }
                     ]);
 
                 if (error) {
                     console.error('Erro ao cadastrar usuário no Supabase:', error.message);
                 } else {
-                    console.log(`Usuário '${newUser}' cadastrado com sucesso no Supabase! Dados:`, data);
+                    console.log(`Usuário '${newUser}' cadastrado com sucesso no Supabase!`);
                 }
             } else {
-                 console.warn('Referência externa não continha dados de novo usuário (newUser, newPass).');
+                 console.warn('Referência externa não continha dados de novo usuário.');
             }
         }
 
-        // Retorna 200 ao Mercado Pago para confirmar o recebimento, independentemente do sucesso no Supabase.
         return {
             statusCode: 200,
-            body: JSON.stringify({ message: 'Notificação recebida e processada.' })
+            body: JSON.stringify({ message: 'Notificação recebida e validada' })
         };
 
     } catch (error) {
         console.error('Erro ao processar notificação:', error.response ? error.response.data : error.message);
         return {
             statusCode: 500,
-            body: JSON.stringify({ error: 'Erro interno no processamento da notificação.' })
+            body: JSON.stringify({ error: 'Erro interno no processamento' })
         };
     }
 };
