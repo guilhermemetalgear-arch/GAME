@@ -4,7 +4,6 @@ const crypto = require('crypto');
 const { createClient } = require('@supabase/supabase-js');
 
 exports.handler = async (event) => {
-    // === INÍCIO DA VERIFICAÇÃO DE ASSINATURA ===
     try {
         const secret = process.env.MERCADO_PAGO_WEBHOOK_SECRET;
         const signatureHeader = event.headers['x-signature'];
@@ -27,25 +26,26 @@ exports.handler = async (event) => {
              return { statusCode: 400, body: 'Formato da assinatura inválido.' };
         }
 
-        // CORREÇÃO: A fórmula para criar o "manifest" de verificação foi ajustada.
-        // O Mercado Pago usa um formato específico que combina o ID da notificação e o timestamp.
-        const notificationDataForValidation = JSON.parse(event.body);
-        const manifest = `id:${notificationDataForValidation.data.id};ts:${ts};`;
-        
+        // CORREÇÃO DEFINITIVA: A assinatura é gerada a partir do timestamp (ts)
+        // e do corpo (body) bruto da requisição, concatenados (juntos).
+        // Esta é a forma mais robusta de garantir que a nossa assinatura local
+        // seja idêntica à do Mercado Pago.
+        const manifest = `${ts}${event.body}`;
+
         const hmac = crypto.createHmac('sha256', secret);
         hmac.update(manifest);
         const generatedSignature = hmac.digest('hex');
 
         if (generatedSignature !== v1) {
-            console.warn('Tentativa de notificação com assinatura inválida! Verifique se a "Assinatura Secreta" na Netlify e no Mercado Pago são IDÊNTICAS.');
+            console.warn('Assinatura inválida. Verifique se a chave secreta na Netlify e no Mercado Pago são IDÊNTICAS e se não há espaços extras.');
             return { statusCode: 401, body: 'Assinatura inválida.' };
         }
     } catch (e) {
         console.error('Erro durante a verificação da assinatura:', e.message);
         return { statusCode: 500, body: 'Erro interno na verificação.' };
     }
-    // === FIM DA VERIFICAÇÃO DE ASSINATURA ===
 
+    // Se a assinatura for válida, o código continua a partir daqui...
     try {
         const notificationData = JSON.parse(event.body);
         const paymentId = notificationData.data.id;
