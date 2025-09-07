@@ -1,14 +1,11 @@
 // Arquivo: netlify/functions/mp-notification.js
 const axios = require('axios');
-const crypto = require('crypto'); // Módulo nativo do Node.js para criptografia
+const crypto = require('crypto');
 
 exports.handler = async (event) => {
     // === INÍCIO DA VERIFICAÇÃO DE ASSINATURA ===
     try {
-        // 1. Pega a assinatura secreta das variáveis de ambiente
         const secret = process.env.MERCADO_PAGO_WEBHOOK_SECRET;
-
-        // 2. Pega o cabeçalho da assinatura enviado pelo Mercado Pago
         const signatureHeader = event.headers['x-signature'];
 
         if (!secret || !signatureHeader) {
@@ -16,7 +13,6 @@ exports.handler = async (event) => {
             return { statusCode: 400, body: 'Configuração de segurança incompleta.' };
         }
 
-        // 3. Extrai o timestamp (ts) e o hash (v1) do cabeçalho
         const parts = signatureHeader.split(',').reduce((acc, part) => {
             const [key, value] = part.split('=');
             acc[key.trim()] = value.trim();
@@ -30,16 +26,11 @@ exports.handler = async (event) => {
              return { statusCode: 400, body: 'Formato da assinatura inválido.' };
         }
 
-        // 4. Cria o "manifest" que o Mercado Pago usou para gerar a assinatura
-        // O formato exato pode ser encontrado na documentação do MP, mas geralmente envolve o timestamp e o corpo da requisição.
         const manifest = `ts:${ts},body:${event.body}`;
-
-        // 5. Gera uma assinatura local usando sua chave secreta
         const hmac = crypto.createHmac('sha256', secret);
         hmac.update(manifest);
         const generatedSignature = hmac.digest('hex');
 
-        // 6. Compara a assinatura gerada com a que foi enviada pelo Mercado Pago
         if (generatedSignature !== v1) {
             console.warn('Tentativa de notificação com assinatura inválida!');
             return { statusCode: 401, body: 'Assinatura inválida.' };
@@ -50,7 +41,6 @@ exports.handler = async (event) => {
     }
     // === FIM DA VERIFICAÇÃO DE ASSINATURA ===
 
-    // Se a assinatura for válida, o código continua a partir daqui...
     try {
         const notificationData = JSON.parse(event.body);
         const paymentId = notificationData.data.id;
@@ -62,11 +52,16 @@ exports.handler = async (event) => {
         });
 
         const paymentDetails = response.data;
+
+        // Extraindo os detalhes principais
         const paymentStatus = paymentDetails.status;
         const externalReference = paymentDetails.external_reference;
+        // CORREÇÃO: Extraindo o valor da transação a partir dos detalhes do pagamento
+        const transactionAmount = paymentDetails.transaction_amount;
 
         console.log(`Notificação VÁLIDA recebida para o pagamento ${paymentId} (Ref: ${externalReference})`);
-        console.log(`Status atual: ${paymentStatus}`);
+        // CORREÇÃO: Exibindo o valor da transação no log
+        console.log(`Status: ${paymentStatus} | Valor: R$ ${transactionAmount}`);
 
         if (paymentStatus === 'approved') {
             console.log(`Pagamento Aprovado! Liberando item para o pedido: ${externalReference}`);
