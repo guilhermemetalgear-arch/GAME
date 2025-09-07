@@ -1,16 +1,14 @@
 // Arquivo: netlify/functions/create-pix-payment.js
 const axios = require('axios');
+const { randomUUID } = require('crypto'); // Módulo nativo do Node.js para gerar IDs únicos
 
 exports.handler = async (event) => {
-    // Cabeçalhos de permissão (CORS)
     const headers = {
-        'Access-Control-Allow-Origin': '*', // Permite acesso de qualquer origem
+        'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Headers': 'Content-Type',
         'Access-Control-Allow-Methods': 'POST, OPTIONS'
     };
 
-    // O navegador envia uma requisição 'OPTIONS' antes do 'POST' para verificar as permissões.
-    // Devemos respondê-la imediatamente com os cabeçalhos.
     if (event.httpMethod === 'OPTIONS') {
         return {
             statusCode: 200,
@@ -26,6 +24,9 @@ exports.handler = async (event) => {
     try {
         const requestBody = JSON.parse(event.body);
         const accessToken = process.env.MERCADO_PAGO_ACCESS_TOKEN;
+        
+        // CORREÇÃO: Gera uma chave de idempotência única para cada requisição
+        const idempotencyKey = randomUUID();
 
         const response = await axios.post(
             'https://api.mercadopago.com/v1/payments',
@@ -39,15 +40,16 @@ exports.handler = async (event) => {
             {
                 headers: {
                     'Authorization': `Bearer ${accessToken}`,
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    // CORREÇÃO: Adiciona a chave de idempotência no cabeçalho da requisição
+                    'X-Idempotency-Key': idempotencyKey
                 }
             }
         );
 
-        // Retorna a resposta da API com os cabeçalhos CORS
         return {
             statusCode: 200,
-            headers, // <-- ADICIONADO AQUI
+            headers,
             body: JSON.stringify(response.data)
         };
 
@@ -55,7 +57,7 @@ exports.handler = async (event) => {
         console.error('Erro na chamada da API:', error.response ? error.response.data : error.message);
         return {
             statusCode: error.response ? error.response.status : 500,
-            headers, // <-- E AQUI TAMBÉM
+            headers,
             body: JSON.stringify({
                 error: 'Ocorreu um erro ao processar o pagamento',
                 details: error.response ? error.response.data : error.message
