@@ -1,6 +1,7 @@
 // Arquivo: netlify/functions/mp-notification.js
 const axios = require('axios');
 const crypto = require('crypto');
+const { createClient } = require('@supabase/supabase-js');
 
 exports.handler = async (event) => {
     // === INÍCIO DA VERIFICAÇÃO DE ASSINATURA ===
@@ -52,27 +53,41 @@ exports.handler = async (event) => {
         });
 
         const paymentDetails = response.data;
-
-        // Extraindo os detalhes principais
         const paymentStatus = paymentDetails.status;
         const externalReference = paymentDetails.external_reference;
-        // CORREÇÃO: Extraindo o valor da transação a partir dos detalhes do pagamento
-        const transactionAmount = paymentDetails.transaction_amount;
 
-        console.log(`Notificação VÁLIDA recebida para o pagamento ${paymentId} (Ref: ${externalReference})`);
-        // CORREÇÃO: Exibindo o valor da transação no log
-        console.log(`Status: ${paymentStatus} | Valor: R$ ${transactionAmount}`);
+        console.log(`Notificação VÁLIDA recebida para o pagamento ${paymentId}. Status: ${paymentStatus}`);
 
+        // SÓ EXECUTA A LÓGICA DE CADASTRO SE O PAGAMENTO FOR APROVADO
         if (paymentStatus === 'approved') {
-            console.log(`Pagamento Aprovado! Liberando item para o pedido: ${externalReference}`);
-            // AQUI entra sua lógica para liberar o item no jogo (ex: atualizar o banco de dados)
-        } else {
-            console.log(`Pagamento com status: ${paymentStatus}. Pedido: ${externalReference}`);
+            console.log(`Pagamento Aprovado! Processando cadastro a partir de: ${externalReference}`);
+            
+            // Extrai os dados de cadastro da referência externa
+            const refData = JSON.parse(externalReference);
+            const { newUser, newPass } = refData;
+
+            if (newUser && newPass) {
+                // Conecta ao Supabase para inserir o novo usuário
+                const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+                
+                const { data, error } = await supabase
+                    .from('usuarios')
+                    .insert([{ login: newUser, senha: newPass }]); // AVISO: Senha em texto puro!
+
+                if (error) {
+                    console.error('Erro ao cadastrar usuário no Supabase:', error.message);
+                    // Mesmo com erro no Supabase, retorna 200 para o MP não reenviar a notificação
+                } else {
+                    console.log(`Usuário '${newUser}' cadastrado com sucesso no Supabase!`);
+                }
+            } else {
+                 console.warn('Referência externa não continha dados de novo usuário.');
+            }
         }
 
         return {
             statusCode: 200,
-            body: JSON.stringify({ message: 'Notificação recebida e validada com sucesso' })
+            body: JSON.stringify({ message: 'Notificação recebida e validada' })
         };
 
     } catch (error) {
