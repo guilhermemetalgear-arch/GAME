@@ -58,43 +58,48 @@ exports.handler = async (event) => {
 
         console.log(`Notificação VÁLIDA recebida para o pagamento ${paymentId}. Status: ${paymentStatus}`);
 
-        // SÓ EXECUTA A LÓGICA DE CADASTRO SE O PAGAMENTO FOR APROVADO
         if (paymentStatus === 'approved') {
             console.log(`Pagamento Aprovado! Processando cadastro a partir de: ${externalReference}`);
             
-            // Extrai os dados de cadastro da referência externa
             const refData = JSON.parse(externalReference);
             const { newUser, newPass } = refData;
 
             if (newUser && newPass) {
-                // Conecta ao Supabase para inserir o novo usuário
-                const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+                // CORREÇÃO: Inicializa o cliente do Supabase com as variáveis de ambiente corretas.
+                // É crucial que SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY estejam configuradas no seu painel da Netlify.
+                const supabase = createClient(
+                    process.env.SUPABASE_URL, 
+                    process.env.SUPABASE_SERVICE_ROLE_KEY
+                );
                 
+                // Tenta inserir o novo usuário na tabela 'usuarios'
                 const { data, error } = await supabase
                     .from('usuarios')
-                    .insert([{ login: newUser, senha: newPass }]); // AVISO: Senha em texto puro!
+                    .insert([
+                        { login: newUser, senha: newPass } // AVISO: Senha em texto puro!
+                    ]);
 
                 if (error) {
                     console.error('Erro ao cadastrar usuário no Supabase:', error.message);
-                    // Mesmo com erro no Supabase, retorna 200 para o MP não reenviar a notificação
                 } else {
-                    console.log(`Usuário '${newUser}' cadastrado com sucesso no Supabase!`);
+                    console.log(`Usuário '${newUser}' cadastrado com sucesso no Supabase! Dados:`, data);
                 }
             } else {
-                 console.warn('Referência externa não continha dados de novo usuário.');
+                 console.warn('Referência externa não continha dados de novo usuário (newUser, newPass).');
             }
         }
 
+        // Retorna 200 ao Mercado Pago para confirmar o recebimento, independentemente do sucesso no Supabase.
         return {
             statusCode: 200,
-            body: JSON.stringify({ message: 'Notificação recebida e validada' })
+            body: JSON.stringify({ message: 'Notificação recebida e processada.' })
         };
 
     } catch (error) {
         console.error('Erro ao processar notificação:', error.response ? error.response.data : error.message);
         return {
             statusCode: 500,
-            body: JSON.stringify({ error: 'Erro interno no processamento' })
+            body: JSON.stringify({ error: 'Erro interno no processamento da notificação.' })
         };
     }
 };
