@@ -4,6 +4,7 @@ const crypto = require('crypto');
 const { createClient } = require('@supabase/supabase-js');
 
 exports.handler = async (event) => {
+    // Bloco 1: Verificação da Assinatura (NENHUMA ALTERAÇÃO NESTA PARTE)
     try {
         const secret = process.env.MERCADO_PAGO_WEBHOOK_SECRET;
         const signatureHeader = event.headers['x-signature'];
@@ -30,14 +31,12 @@ exports.handler = async (event) => {
         const notificationData = JSON.parse(event.body);
         const notificationId = notificationData.data.id;
         
-        // CORREÇÃO DEFINITIVA: O formato correto do manifest usa o id, o request-id e o timestamp, conforme a documentação técnica.
         const manifest = `id:${notificationId};request-id:${requestId};ts:${ts};`;
 
         const hmac = crypto.createHmac('sha256', secret);
         hmac.update(manifest);
         const generatedSignature = hmac.digest('hex');
 
-        // A verificação de segurança agora está ATIVA com a fórmula correta.
         if (generatedSignature !== v1) {
             console.warn('Tentativa de notificação com assinatura inválida!');
             return { statusCode: 401, body: 'Assinatura inválida.' };
@@ -47,7 +46,7 @@ exports.handler = async (event) => {
         return { statusCode: 500, body: 'Erro interno na verificação.' };
     }
 
-    // Se a assinatura for válida, o código continua a partir daqui...
+    // Bloco 2: Processamento da Notificação (ALTERAÇÕES APLICADAS AQUI)
     try {
         const notificationData = JSON.parse(event.body);
         const paymentId = notificationData.data.id;
@@ -94,14 +93,29 @@ exports.handler = async (event) => {
 
         return {
             statusCode: 200,
-            body: JSON.stringify({ message: 'Notificação recebida e validada' })
+            body: JSON.stringify({ message: 'Notificação processada com sucesso.' })
         };
 
     } catch (error) {
-        console.error('Erro ao processar notificação:', error.response ? error.response.data : error.message);
-        return {
-            statusCode: 500,
-            body: JSON.stringify({ error: 'Erro interno no processamento' })
-        };
+        // --- AJUSTE PRINCIPAL APLICADO AQUI ---
+        // Verifica se o erro é o específico de "Pagamento não encontrado" (status 404).
+        if (error.response && error.response.status === 404) {
+            
+            // Registra um AVISO em vez de um ERRO, pois é um cenário esperado.
+            console.warn(`AVISO: A notificação se refere a um pagamento que não foi encontrado (ID: ${JSON.parse(event.body).data.id}). A notificação será ignorada.`);
+            
+            // Responde com sucesso (200) para que o Mercado Pago não reenvie a notificação.
+            return {
+                statusCode: 200,
+                body: JSON.stringify({ message: 'Notificação recebida, mas o pagamento não foi encontrado. Nenhum reenvio é necessário.' })
+            };
+        } else {
+            // Para todos os outros erros (500, 401, etc.), mantém o comportamento de erro crítico.
+            console.error('Erro ao processar notificação:', error.response ? error.response.data : error.message);
+            return {
+                statusCode: 500,
+                body: JSON.stringify({ error: 'Erro interno no processamento' })
+            };
+        }
     }
 };
