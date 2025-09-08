@@ -1,121 +1,74 @@
-// Arquivo: netlify/functions/mp-notification.js
+// Arquivo: netlify/functions/criar-pix.js (ou nome similar)
 const axios = require('axios');
-const crypto = require('crypto');
-const { createClient } = require('@supabase/supabase-js');
 
 exports.handler = async (event) => {
-    // Bloco 1: Verificação da Assinatura (NENHUMA ALTERAÇÃO NESTA PARTE)
-    try {
-        const secret = process.env.MERCADO_PAGO_WEBHOOK_SECRET;
-        const signatureHeader = event.headers['x-signature'];
-        const requestId = event.headers['x-request-id'];
-
-        if (!secret || !signatureHeader || !requestId) {
-            console.error('Webhook secret, assinatura ou request-id não encontrados nos cabeçalhos.');
-            return { statusCode: 400, body: 'Configuração de segurança incompleta.' };
-        }
-
-        const parts = signatureHeader.split(',').reduce((acc, part) => {
-            const [key, value] = part.split('=');
-            acc[key.trim()] = value.trim();
-            return acc;
-        }, {});
-
-        const ts = parts.ts;
-        const v1 = parts.v1;
-
-        if (!ts || !v1) {
-             return { statusCode: 400, body: 'Formato da assinatura inválido.' };
-        }
-
-        const notificationData = JSON.parse(event.body);
-        const notificationId = notificationData.data.id;
-        
-        const manifest = `id:${notificationId};request-id:${requestId};ts:${ts};`;
-
-        const hmac = crypto.createHmac('sha256', secret);
-        hmac.update(manifest);
-        const generatedSignature = hmac.digest('hex');
-
-        if (generatedSignature !== v1) {
-            console.warn('Tentativa de notificação com assinatura inválida!');
-            return { statusCode: 401, body: 'Assinatura inválida.' };
-        }
-    } catch (e) {
-        console.error('Erro durante a verificação da assinatura:', e.message);
-        return { statusCode: 500, body: 'Erro interno na verificação.' };
+    // Garante que o método da requisição seja POST
+    if (event.httpMethod !== 'POST') {
+        return { statusCode: 405, body: 'Método não permitido' };
     }
 
-    // Bloco 2: Processamento da Notificação (ALTERAÇÕES APLICADAS AQUI)
     try {
-        const notificationData = JSON.parse(event.body);
-        const paymentId = notificationData.data.id;
-        const accessToken = process.env.MERCADO_PAGO_ACCESS_TOKEN;
-        const paymentUrl = `https://api.mercadopago.com/v1/payments/${paymentId}`;
+        // 1. Extrai os dados do corpo da requisição (enviados pelo seu frontend)
+        const { amount, userEmail, userFirstName, userLastName, userDocument } = JSON.parse(event.body);
 
-        const response = await axios.get(paymentUrl, {
-            headers: { 'Authorization': `Bearer ${accessToken}` }
+        if (!amount || !userEmail || !userFirstName || !userLastName || !userDocument) {
+            return { statusCode: 400, body: 'Dados incompletos para gerar o PIX.' };
+        }
+        
+        // --- AJUSTE PRINCIPAL APLICADO AQUI ---
+        // Remove todos os caracteres não numéricos (pontos, traços, barras) do documento.
+        // Ex: "123.456.789-00" se torna "12345678900"
+        const documentoLimpo = userDocument.replace(/\D/g, '');
+
+        // 2. Monta o corpo da requisição para a API de pagamentos
+        const accessToken = process.env.MERCADO_PAGO_ACCESS_TOKEN;
+        const paymentApiUrl = 'https://api.mercadopago.com/v1/payments';
+
+        const dadosPagamento = {
+            transaction_amount: Number(amount),
+            description: 'Descrição do seu produto/serviço',
+            payment_method_id: 'pix',
+            payer: {
+                email: userEmail,
+                first_name: userFirstName,
+                last_name: userLastName,
+                identification: {
+                    type: documentoLimpo.length === 11 ? 'CPF' : 'CNPJ',
+                    number: documentoLimpo // Usa o documento já limpo
+                }
+            }
+        };
+
+        // 3. Envia a requisição para a API para criar o pagamento PIX
+        const response = await axios.post(paymentApiUrl, dadosPagamento, {
+            headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/json'
+            }
         });
 
-        const paymentDetails = response.data;
-        const paymentStatus = paymentDetails.status;
-        const externalReference = paymentDetails.external_reference;
-
-        console.log(`Notificação VÁLIDA recebida para o pagamento ${paymentId}. Status: ${paymentStatus}`);
-
-        if (paymentStatus === 'approved') {
-            console.log(`Pagamento Aprovado! Processando cadastro a partir de: ${externalReference}`);
-            
-            const refData = JSON.parse(externalReference);
-            const { newUser, newPass } = refData;
-
-            if (newUser && newPass) {
-                const supabase = createClient(
-                    process.env.SUPABASE_URL, 
-                    process.env.SUPABASE_SERVICE_ROLE_KEY
-                );
-                
-                const { data, error } = await supabase
-                    .from('usuarios')
-                    .insert([
-                        { login: newUser, senha: newPass }
-                    ]);
-
-                if (error) {
-                    console.error('Erro ao cadastrar usuário no Supabase:', error.message);
-                } else {
-                    console.log(`Usuário '${newUser}' cadastrado com sucesso no Supabase!`);
-                }
-            } else {
-                 console.warn('Referência externa não continha dados de novo usuário.');
-            }
-        }
+        // 4. Retorna os dados do PIX (QR Code, etc.) para o frontend
+        const dadosPix = {
+            paymentId: response.data.id,
+            qrCodeBase64: response.data.point_of_interaction.transaction_data.qr_code_base64,
+            qrCode: response.data.point_of_interaction.transaction_data.qr_code
+        };
 
         return {
-            statusCode: 200,
-            body: JSON.stringify({ message: 'Notificação processada com sucesso.' })
+            statusCode: 201, // 201 Created
+            body: JSON.stringify(dadosPix)
         };
 
     } catch (error) {
-        // --- AJUSTE PRINCIPAL APLICADO AQUI ---
-        // Verifica se o erro é o específico de "Pagamento não encontrado" (status 404).
-        if (error.response && error.response.status === 404) {
-            
-            // Registra um AVISO em vez de um ERRO, pois é um cenário esperado.
-            console.warn(`AVISO: A notificação se refere a um pagamento que não foi encontrado (ID: ${JSON.parse(event.body).data.id}). A notificação será ignorada.`);
-            
-            // Responde com sucesso (200) para que o Mercado Pago não reenvie a notificação.
-            return {
-                statusCode: 200,
-                body: JSON.stringify({ message: 'Notificação recebida, mas o pagamento não foi encontrado. Nenhum reenvio é necessário.' })
-            };
-        } else {
-            // Para todos os outros erros (500, 401, etc.), mantém o comportamento de erro crítico.
-            console.error('Erro ao processar notificação:', error.response ? error.response.data : error.message);
-            return {
-                statusCode: 500,
-                body: JSON.stringify({ error: 'Erro interno no processamento' })
-            };
-        }
+        // Captura e loga o erro detalhado da API de pagamentos
+        console.error('Falha ao criar PIX:', error.response ? error.response.data : error.message);
+        
+        const errorBody = error.response ? error.response.data : { message: 'Erro interno no servidor.' };
+
+        return {
+            // Retorna o mesmo status de erro da API externa (ex: 400) ou 500 se for um erro genérico.
+            statusCode: error.response ? error.response.status : 500,
+            body: JSON.stringify(errorBody)
+        };
     }
 };
