@@ -4,13 +4,13 @@ const crypto = require('crypto');
 const { createClient } = require('@supabase/supabase-js');
 
 exports.handler = async (event) => {
-    // === INÍCIO DA VERIFICAÇÃO DE ASSINATURA (MODO DEPURAÇÃO) ===
     try {
         const secret = process.env.MERCADO_PAGO_WEBHOOK_SECRET;
         const signatureHeader = event.headers['x-signature'];
+        const requestId = event.headers['x-request-id'];
 
-        if (!secret || !signatureHeader) {
-            console.error('Webhook secret ou assinatura do header não encontrados.');
+        if (!secret || !signatureHeader || !requestId) {
+            console.error('Webhook secret, assinatura ou request-id não encontrados nos cabeçalhos.');
             return { statusCode: 400, body: 'Configuração de segurança incompleta.' };
         }
 
@@ -27,38 +27,27 @@ exports.handler = async (event) => {
              return { statusCode: 400, body: 'Formato da assinatura inválido.' };
         }
 
-        const manifest = `${ts}${event.body}`;
+        const notificationData = JSON.parse(event.body);
+        const notificationId = notificationData.data.id;
+        
+        // CORREÇÃO DEFINITIVA: O formato correto do manifest usa o id, o request-id e o timestamp, conforme a documentação técnica.
+        const manifest = `id:${notificationId};request-id:${requestId};ts:${ts};`;
 
         const hmac = crypto.createHmac('sha256', secret);
         hmac.update(manifest);
         const generatedSignature = hmac.digest('hex');
-        
-        // ======================= BLOCO DE DEPURAÇÃO =======================
-        console.log('--- INICIANDO DEPURAÇÃO DE ASSINATURA ---');
-        console.log('Timestamp (ts) recebido:', ts);
-        console.log('Manifesto gerado para assinatura:', manifest);
-        console.log('Assinatura recebida do MP (v1):', v1);
-        console.log('Assinatura gerada localmente:', generatedSignature);
-        console.log('As assinaturas são iguais?', generatedSignature === v1);
-        console.log('Tamanho da chave secreta (deve ser 64):', secret ? secret.length : 'NÃO ENCONTRADA');
-        console.log('--- FIM DA DEPURAÇÃO ---');
-        // ================================================================
 
-        // A linha abaixo foi comentada TEMPORARIAMENTE para permitir que o resto do código execute
-        // e possamos ver os logs de depuração.
-        /*
+        // A verificação de segurança agora está ATIVA com a fórmula correta.
         if (generatedSignature !== v1) {
-            console.warn('Assinatura inválida.');
+            console.warn('Tentativa de notificação com assinatura inválida!');
             return { statusCode: 401, body: 'Assinatura inválida.' };
         }
-        */
-
     } catch (e) {
         console.error('Erro durante a verificação da assinatura:', e.message);
         return { statusCode: 500, body: 'Erro interno na verificação.' };
     }
-    // === FIM DA VERIFICAÇÃO DE ASSINATURA ===
 
+    // Se a assinatura for válida, o código continua a partir daqui...
     try {
         const notificationData = JSON.parse(event.body);
         const paymentId = notificationData.data.id;
@@ -73,7 +62,7 @@ exports.handler = async (event) => {
         const paymentStatus = paymentDetails.status;
         const externalReference = paymentDetails.external_reference;
 
-        console.log(`Notificação recebida para o pagamento ${paymentId}. Status: ${paymentStatus}`);
+        console.log(`Notificação VÁLIDA recebida para o pagamento ${paymentId}. Status: ${paymentStatus}`);
 
         if (paymentStatus === 'approved') {
             console.log(`Pagamento Aprovado! Processando cadastro a partir de: ${externalReference}`);
@@ -105,7 +94,7 @@ exports.handler = async (event) => {
 
         return {
             statusCode: 200,
-            body: JSON.stringify({ message: 'Notificação recebida em modo de depuração' })
+            body: JSON.stringify({ message: 'Notificação recebida e validada' })
         };
 
     } catch (error) {
