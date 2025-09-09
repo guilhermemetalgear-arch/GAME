@@ -48,7 +48,7 @@ export async function handler(event) {
     return json(400, { error: 'Parâmetros inválidos.' });
   }
 
-  // Supabase table: armazenamento de jogo
+  // Supabase table: armazenamento_de_jogo
   // Columns: user_name, score, character_info, virtue_info, gameplay_log
   const row = {
     user_name: userName,
@@ -61,7 +61,7 @@ export async function handler(event) {
   console.log('[submit-gamedata] inserting gamedata for user:', userName);
 
   const { data, error } = await supabase
-    .from('armazenamento de jogo') // Table name as requested
+    .from('armazenamento_de_jogo') // CORREÇÃO: Nome da tabela ajustado para não ter espaços.
     .insert([row])
     .select('*')
     .single();
