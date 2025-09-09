@@ -48,6 +48,30 @@ export async function handler(event) {
     return json(400, { error: 'Parâmetros inválidos.' });
   }
 
+  // ETAPA DE VERIFICAÇÃO ANTI-HACK
+  const { data: userData, error: userError } = await supabase
+    .from('usuarios')
+    .select('ultima_tentativa')
+    .eq('login', userName)
+    .single();
+
+  if (userError || !userData) {
+    console.warn('[submit-gamedata] Usuário não encontrado para validação:', userName);
+    return json(403, { error: 'Falha na validação: usuário não encontrado.' });
+  }
+
+  const lastAttemptTime = new Date(userData.ultima_tentativa).getTime();
+  const now = new Date().getTime();
+  const diffSeconds = (now - lastAttemptTime) / 1000;
+
+  const MAX_SECONDS_ALLOWED = 90; // 1 minuto e 30 segundos
+
+  if (diffSeconds > MAX_SECONDS_ALLOWED) {
+    console.warn(`[submit-gamedata] Falha na validação anti-hack para o usuário ${userName}. Diferença de tempo: ${diffSeconds}s`);
+    return json(403, { error: `Verificação de tempo da partida falhou. (>${MAX_SECONDS_ALLOWED}s)` });
+  }
+  // FIM DA ETAPA DE VERIFICAÇÃO
+
   // Supabase table: armazenamento_de_jogo
   // Columns: user_name, score, character_info, virtue_info, gameplay_log
   const row = {
@@ -61,7 +85,7 @@ export async function handler(event) {
   console.log('[submit-gamedata] inserting gamedata for user:', userName);
 
   const { data, error } = await supabase
-    .from('armazenamento_de_jogo') // CORREÇÃO: Nome da tabela ajustado para não ter espaços.
+    .from('armazenamento_de_jogo')
     .insert([row])
     .select('*')
     .single();
