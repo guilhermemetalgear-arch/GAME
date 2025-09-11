@@ -30,8 +30,10 @@ exports.handler = async (event) => {
 
             // 3. Procede apenas se o pagamento estiver aprovado e tiver os dados do novo usuário
             if (paymentDetails.status === 'approved' && paymentDetails.external_reference) {
-                const { newUser, newPass } = JSON.parse(paymentDetails.external_reference);
+                // Extrai os dados, incluindo o novo campo 'cupom'
+                const { newUser, newPass, cupom } = JSON.parse(paymentDetails.external_reference);
                 const transactionAmount = Math.floor(paymentDetails.transaction_amount);
+                const paymentDate = paymentDetails.date_approved || new Date().toISOString();
 
                 if (!newUser || !newPass || transactionAmount < 1) {
                     console.warn('Dados insuficientes na referência externa ou valor inválido.', paymentDetails.external_reference);
@@ -46,7 +48,6 @@ exports.handler = async (event) => {
                     .eq('login', newUser)
                     .single();
 
-                // 'PGRST116' é o código para "nenhuma linha encontrada", o que é o esperado. Qualquer outro erro é um problema.
                 if (findError && findError.code !== 'PGRST116') {
                     throw findError;
                 }
@@ -57,31 +58,48 @@ exports.handler = async (event) => {
                 }
 
                 // 5. Insere o novo usuário no Supabase com as tentativas baseadas no valor pago
-                const { error: insertError } = await supabase
+                const { error: insertUserError } = await supabase
                     .from('usuarios')
                     .insert([
                         {
                             login: newUser,
-                            senha: newPass, // ATENÇÃO: Armazenar senhas em texto puro não é seguro. Em produção, use um método de hash (ex: bcrypt).
+                            senha: newPass, // ATENÇÃO: Armazenar senhas em texto puro não é seguro.
                             tentativas: transactionAmount
                         }
                     ]);
 
-                if (insertError) {
-                    // Lança o erro para ser capturado pelo bloco catch
-                    throw insertError;
+                if (insertUserError) {
+                    throw insertUserError;
                 }
 
                 console.log(`Usuário ${newUser} criado com sucesso com ${transactionAmount} tentativas.`);
+
+                // 6. (NOVO) Insere os dados na tabela 'cupons_aplicados'
+                const { error: insertCouponError } = await supabase
+                    .from('cupons_aplicados')
+                    .insert([
+                        {
+                            usuario: newUser,
+                            cupom_aplicado: cupom || null, // Salva o cupom, ou null se não houver
+                            data_do_pagamento: paymentDate,
+                            valor_pagamento: paymentDetails.transaction_amount // Valor exato do pagamento
+                        }
+                    ]);
+
+                if (insertCouponError) {
+                    // Loga o erro mas não para o processo, pois o usuário já foi criado
+                    console.error('Erro ao inserir na tabela de cupons:', insertCouponError);
+                } else {
+                    console.log(`Registro de pagamento/cupom para ${newUser} inserido com sucesso.`);
+                }
             }
         }
 
-        // 6. Retorna status 200 para confirmar o recebimento da notificação ao Mercado Pago
+        // 7. Retorna status 200 para confirmar o recebimento da notificação ao Mercado Pago
         return { statusCode: 200, body: 'Notificação recebida com sucesso.' };
 
     } catch (error) {
         console.error('Erro no webhook do Mercado Pago:', error);
-        // Retorna um erro 500, o que fará o Mercado Pago tentar reenviar a notificação mais tarde.
         return {
             statusCode: 500,
             body: JSON.stringify({ error: 'Erro interno ao processar a notificação.' })
