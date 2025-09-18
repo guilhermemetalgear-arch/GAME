@@ -61,5 +61,18 @@ export async function handler(event) {
     return json(500, { success: false, message: 'Erro ao registrar tentativa no banco de dados.' });
   }
 
+  // ALTERAÇÃO: Atualiza o campo 'ultima_tentativa' com o timestamp atual.
+  // Isso acontece somente quando o usuário efetivamente entra no mapa do jogo.
+  const { error: updateTimestampError } = await supabase
+    .from('usuarios')
+    .update({ ultima_tentativa: new Date().toISOString() })
+    .eq('login', login);
+
+  if (updateTimestampError) {
+    // Apenas registra o erro no console, mas não impede a resposta de sucesso,
+    // pois a parte crítica (decrementar a tentativa) já funcionou.
+    console.error(`[decrement-attempt] Falha ao atualizar o timestamp para o usuário ${login}:`, updateTimestampError);
+  }
+
   return json(200, { success: true, message: 'Tentativa registrada com sucesso.' });
 }

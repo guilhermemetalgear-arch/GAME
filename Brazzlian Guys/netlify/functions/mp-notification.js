@@ -74,10 +74,19 @@ exports.handler = async (event) => {
                     ]);
 
                 if (insertUserError) {
-                    throw insertUserError;
+                    // ALTERAÇÃO: Captura o erro de chave duplicada (23505) que causa o problema.
+                    // Isso pode acontecer em uma condição de corrida. Se o erro for esse,
+                    // consideramos um sucesso, pois o usuário já foi inserido por outra chamada.
+                    if (insertUserError.code === '23505') {
+                        console.warn(`Conflito de inserção para o usuário ${newUser} (código 23505), tratando como sucesso pois o usuário já existe.`);
+                    } else {
+                        // Se for qualquer outro erro, ele será lançado e capturado pelo bloco catch principal.
+                        throw insertUserError;
+                    }
+                } else {
+                    console.log(`Usuário ${newUser} criado com sucesso com todos os dados.`);
                 }
-                console.log(`Usuário ${newUser} criado com sucesso com todos os dados.`);
-
+                
                 // 3. (NOVO) Insere os dados na tabela 'cupons_aplicados'
                 const { error: insertCouponError } = await supabase
                     .from('cupons_aplicados')
