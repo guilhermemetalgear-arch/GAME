@@ -3,186 +3,587 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0, viewport-fit=cover">
-  <title>BRAZILLIAN GUY - THE GAME</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Comprar Créditos PIX - BRAZILLIAN GUY</title>
+  <style>
+    /* Estilos copiados do style.css e adaptados para esta página */
+    :root {
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    body {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      background-image: url('https://ncdigovkmfcvztdlqwoe.supabase.co/storage/v1/object/public/Imagem%20Pix/IMAGEM%20DE%20FUNDO%20-%20INICIO.png');
+      background-size: cover;
+      background-position: center center;
+      background-repeat: no-repeat;
+      color: #ecf0f1;
+      font-family: Arial, sans-serif;
+      overflow: hidden;
+      padding-bottom: var(--safe-bottom);
+      box-sizing: border-box;
+    }
+    /* --- TELA INICIAL --- */
+    #initial-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+      padding: 20px;
+      background-color: rgba(18, 20, 23, 0.85);
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.5);
+    }
+    .initial-title {
+        margin-bottom: 10px;
+        font-size: 24px;
+        font-weight: bold;
+    }
+    .initial-button {
+        padding: 15px 30px;
+        font-size: 16px;
+        font-weight: 700;
+        border-radius: 10px;
+        border: none;
+        cursor: pointer;
+        color: #fff;
+        width: 250px;
+        text-align: center;
+    }
+    #showPixBtn {
+        background-color: #00a650;
+    }
+    #showPrivacyBtn {
+        background-color: #3e444a;
+    }
+
+    /* --- ESTILOS GERAIS DOS MODAIS --- */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.55);
+      /* Alterado de 'flex' para 'none' para iniciar oculto */
+      display: none; 
+      align-items: center;
+      justify-content: center;
+      z-index: 99998;
+      padding: 16px;
+    }
+    .modal {
+      width: min(520px, 96vw);
+      background: #121417;
+      color: #e9ecef;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.5);
+      overflow: hidden;
+    }
+    .modal-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid #2a2f36;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .modal-header h3 {
+      margin: 0;
+      font-size: 18px;
+    }
+    .modal-body {
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+    .modal-body p {
+      margin: 0;
+      line-height: 1.5;
+      font-size: 14px;
+      opacity: 0.9;
+    }
+    .modal-body h4 {
+      margin-top: 10px;
+      margin-bottom: 0;
+    }
+     .modal-body ul {
+      margin: 5px 0;
+      padding-left: 20px;
+    }
+     .modal-body li {
+      margin-bottom: 5px;
+    }
+    .form-label {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .form-label span {
+      min-width: 105px;
+    }
+    .form-input {
+      flex: 1;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid #2a2f36;
+      background: #0f1114;
+      color: #e9ecef;
+    }
+    .modal-button-container {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+    .modal-button {
+      background: #00a650;
+      border: none;
+      color: #fff;
+      padding: 10px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+    .modal-button.secondary {
+        background-color: #3e444a;
+    }
+    .pix-result {
+      display: none;
+      border: 1px solid #2a2f36;
+      border-radius: 12px;
+      padding: 14px;
+    }
+    .pix-content {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+    .pix-qr {
+      width: 210px;
+      height: 210px;
+      object-fit: contain;
+      background: #0b0d10;
+      border-radius: 8px;
+      border: 1px solid #222;
+    }
+    .pix-info {
+      flex: 1;
+      min-width: 220px;
+    }
+    .pix-info div {
+      font-size: 14px;
+      opacity: 0.8;
+    }
+    .pix-copy-area {
+      width: 100%;
+      height: 110px;
+      margin-top: 6px;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid #2a2f36;
+      background: #0f1114;
+      color: #e9ecef;
+      resize: none;
+    }
+    .pix-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .pix-copy-btn {
+      background: #2d6cdf;
+      border: none;
+      color: #fff;
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+    .pix-status {
+      align-self: center;
+      font-size: 13px;
+      opacity: 0.85;
+    }
+    .pix-note {
+      margin-top: 10px;
+      font-size: 12px;
+      opacity: 0.8;
+    }
+  </style>
 </head>
-<body ontouchstart="">
-  <!-- Badge global no canto superior esquerdo -->
-  <div id="global-user-display" aria-live="polite"></div>
+<body>
 
-  <div id="start-screen">
-    <div class="start-card">
-      <h1>BRAZILLIAN GUY</h1>
-      <p>A jornada vai começar. Você está pronto?</p>
+<audio id="backgroundMusic" loop>
+  <source src="https://ncdigovkmfcvztdlqwoe.supabase.co/storage/v1/object/public/audio/jogo.mp3" type="audio/mpeg">
+</audio>
 
-      <!-- Campo de login na tela inicial -->
-      <div class="start-login-row">
-        <input id="userNameInput" type="text" placeholder="Digite seu login (ex.: GUI)" autocomplete="nickname" />
-      </div>
+<div id="initial-screen">
+    <h2 class="initial-title">Bem-vindo!</h2>
+    <button id="showPixBtn" class="initial-button">Comprar Créditos</button>
+    <button id="showPrivacyBtn" class="initial-button">Política de Privacidade</button>
+</div>
 
-      <div class="start-buttons">
-        <button id="login-btn">Efetuar Login</button>
-        <button id="training-btn">Treinar</button>
-      </div>
+<div id="pixModal" class="modal-backdrop">
+    <div class="modal">
+        <div class="modal-header">
+            <div style="width:10px;height:10px;background:#00a650;border-radius:50%;"></div>
+            <h3>Comprar Créditos via PIX</h3>
+            <div style="margin-left:auto;opacity:.8;font-size:12px">Liberação automática</div>
+        </div>
+        <div class="modal-body">
+            <p>Compre tentativas para jogar (R$ 1 = 1 tentativa). O acesso é liberado assim que o pagamento for aprovado.</p>
+            <label class="form-label">
+                <span>Valor (R$):</span>
+                <input id="pixAmount" class="form-input" type="number" min="10" step="1" value="10" />
+            </label>
+            <label class="form-label">
+                <span>Nome Completo:</span>
+                <input id="pixUserName" class="form-input" type="text" placeholder="Nome do pagador" />
+            </label>
+            <label class="form-label">
+                <span>CPF:</span>
+                <input id="pixUserCPF" class="form-input" type="text" placeholder="CPF do pagador (apenas números)" />
+            </label>
+            <label class="form-label">
+                <span>E-mail:</span>
+                <input id="pixUserEmail" class="form-input" type="email" placeholder="seu@email.com" />
+            </label>
+            <label class="form-label">
+                <span>Endereço:</span>
+                <input id="pixUserAddress" class="form-input" type="text" placeholder="Rua e Número" />
+            </label>
+            <label class="form-label">
+                <span>Cidade:</span>
+                <input id="pixUserCity" class="form-input" type="text" placeholder="Sua cidade" />
+            </label>
+            <label class="form-label">
+                <span>Estado (UF):</span>
+                <input id="pixUserState" class="form-input" type="text" placeholder="SP" maxlength="2" />
+            </label>
+            <label class="form-label">
+                <span>Cupom:</span>
+                <input id="pixUserCupom" class="form-input" type="text" placeholder="Código do cupom (opcional)" />
+            </label>
+            <label class="form-label">
+                <span>Login:</span>
+                <input id="pixUserLogin" class="form-input" type="text" placeholder="Crie seu login de acesso" />
+            </label>
+            <label class="form-label">
+                <span>Senha:</span>
+                <input id="pixUserPassword" class="form-input" type="password" placeholder="Crie sua senha de acesso" />
+            </label>
+            <div class="modal-button-container">
+                <button id="pixCreateBtn" class="modal-button">Gerar QR Code</button>
+                <button id="backFromPixBtn" class="modal-button secondary">Voltar</button>
+            </div>
+            <div id="pixResult" class="pix-result">
+                <div class="pix-content">
+                    <img id="pixQrImg" alt="QR Code PIX" class="pix-qr" />
+                    <div class="pix-info">
+                        <div>Código copia-e-cola</div>
+                        <textarea id="pixCopiaCola" class="pix-copy-area" readonly></textarea>
+                        <div class="pix-actions">
+                            <button id="pixCopyBtn" class="pix-copy-btn">Copiar código</button>
+                            <span id="pixLocalStatus" class="pix-status">Aguardando pagamento…</span>
+                        </div>
+                        <div class="pix-note">Pague e aguarde a confirmação nesta tela para a liberação do seu acesso.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
+</div>
 
-  <div class="title-row" style="display: none;">
-    <img
-      id="titleLogo"
-      class="title-logo"
-      src="https://i.postimg.cc/G3kw0tnb/Gemini-Generated-Image-mas1lmas1lmas1lm.png"
-      alt="Brazillian Guys"
-      loading="eager"
-      decoding="async"
-    />
-  </div>
+<div id="privacyModal" class="modal-backdrop">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>Política de Privacidade</h3>
+        </div>
+        <div class="modal-body">
+            <p><strong>Última atualização:</strong> 18 de setembro de 2025</p>
+            <p>Sua privacidade é fundamental. Esta política detalha como coletamos, usamos e protegemos suas informações ao utilizar nosso site para comprar créditos para o jogo BRAZILLIAN GUY.</p>
+            
+            <h4>1. Informações que Coletamos</h4>
+            <p>Para processar sua compra de créditos e criar sua conta de acesso, solicitamos as seguintes informações pessoais:</p>
+            <ul>
+                <li><strong>Dados de Identificação:</strong> Nome Completo e CPF.</li>
+                <li><strong>Dados de Contato:</strong> E-mail.</li>
+                <li><strong>Endereço:</strong> Rua, Número, Cidade e Estado.</li>
+                <li><strong>Dados de Acesso:</strong> Login e Senha que você irá criar para acessar o jogo.</li>
+                <li><strong>Informações Opcionais:</strong> Código de cupom, caso possua.</li>
+            </ul>
 
-  <div id="character-select-screen" style="display: none;">
-    <div id="user-name-display"></div>
-    <h2>Escolha seu Personagem</h2>
-    <div class="character-select-content">
-      <div class="character-grid">
-        <div
-          class="character-option"
-          id="character1"
-          data-image="https://i.postimg.cc/wjMbqBwn/Chat-GPT-Image-27-de-ago-de-2025-22-22-04.png"
-          data-portrait="https://i.postimg.cc/cCWrZ57J/Chat-GPT-Image-29-de-ago-de-2025-18-24-36.png"
-          data-projectile-img="https://i.postimg.cc/VvNW9RvD/Pngtree-pink-heart-icon-20522142.png"
-        >
-          <img src="https://i.postimg.cc/wjMbqBwn/Chat-GPT-Image-27-de-ago-de-2025-22-22-04.png" alt="Personagem 1" width="98" height="98">
-          <h3>Maria</h3>
-          <p>Resistência ao primeiro contato (chance extra)</p>
-        </div>
+            <h4>2. Como Utilizamos Suas Informações</h4>
+            <p>Os dados coletados são estritamente utilizados para as seguintes finalidades:</p>
+            <ul>
+                <li><strong>Processamento de Pagamento:</strong> Enviar as informações necessárias ao nosso parceiro de pagamentos para gerar o QR Code PIX e validar a transação.</li>
+                <li><strong>Criação de Conta:</strong> Utilizar seu Login e Senha para criar sua conta de usuário, que dará acesso ao jogo.</li>
+                <li><strong>Segurança e Validação:</strong> O CPF e o Nome Completo são usados para garantir a titularidade da transação, prevenindo fraudes.</li>
+                <li><strong>Comunicação:</strong> Usamos seu e-mail para enviar confirmações de pagamento e informações importantes sobre sua conta.</li>
+                <li><strong>Obrigações Legais:</strong> Manter registros para cumprir exigências fiscais e regulatórias.</li>
+            </ul>
 
-        <div
-          class="character-option"
-          id="character2"
-          data-image="https://i.postimg.cc/W3bm57SQ/Pngtree-3d-delivery-man-red-scooter-14434092.png"
-          data-portrait="https://i.postimg.cc/nLc88KQt/Chat-GPT-Image-29-de-ago-de-2025-18-30-43.png"
-          data-projectile-img="https://i.postimg.cc/yYrGkJxF/36.png"
-        >
-          <img src="https://i.postimg.cc/W3bm57SQ/Pngtree-3d-delivery-man-red-scooter-14434092.png" alt="Personagem 2" width="98" height="98">
-          <h3>Motoboy</h3>
-          <p>Velocidade de +40%</p>
-        </div>
+            <h4>3. Armazenamento de Dados e Segurança</h4>
+            <p>As informações fornecidas são retidas apenas pelo tempo necessário para a prestação do serviço e para fins legais. Adotamos medidas de segurança para proteger seus dados contra perda, roubo e acesso não autorizado.</p>
+            <p>Para sua conveniência, alguns dados do formulário (exceto a senha) são salvos no armazenamento local (`localStorage`) do seu navegador. Isso permite que, ao retornar à página, os campos já estejam preenchidos, agilizando o processo.</p>
 
-        <div
-          class="character-option"
-          id="character3"
-          data-image="https://i.postimg.cc/zGRckx63/20250824-1543-Cheerful-Cartoon-Wave-simple-compose-01k3ep8xhjfje80vm60yp9h9x4.gif"
-          data-portrait="https://i.postimg.cc/Cx8THLTW/Chat-GPT-Image-29-de-ago-de-2025-18-27-33.png"
-          data-projectile-img="URL_PROJETIL_AQUI_3"
-        >
-          <img src="https://i.postimg.cc/zGRckx63/20250824-1543-Cheerful-Cartoon-Wave-simple-compose-01k3ep8xhjfje80vm60yp9h9x4.gif" alt="Personagem 3" width="98" height="98">
-          <h3>João</h3>
-          <p>Aperte Z e elimine os inimigos em um raio de ação (1 uso por partida)</p>
+            <h4>4. Compartilhamento de Informações</h4>
+            <p>Não compartilhamos suas informações pessoais com terceiros, exceto nas seguintes situações:</p>
+            <ul>
+                <li><strong>Provedores de Pagamento:</strong> Para processar a transação PIX, seus dados de pagamento são compartilhados de forma segura com nosso gateway de pagamento.</li>
+                <li><strong>Exigência Legal:</strong> Caso sejamos obrigados por lei a divulgar determinadas informações a autoridades competentes.</li>
+            </ul>
+
+            <h4>5. Seus Direitos (LGPD)</h4>
+            <p>Você, como titular dos dados, tem o direito de solicitar o acesso, correção, ou exclusão de suas informações pessoais. Você é livre para não fornecer os dados solicitados, porém, nesse caso, não será possível concluir a compra e criar a conta.</p>
+            <p>O uso do nosso site para a compra de créditos será considerado como aceitação de nossas práticas. Em caso de dúvidas, entre em contato através do e-mail: [SEU EMAIL DE CONTATO AQUI].</p>
         </div>
-      </div>
-      
-      <div id="virtues-panel">
-        <h4>4 Virtudes Cardeais</h4>
-        <div class="virtue-option" data-speed="0.20" data-damage="0" data-reduction="0">
-          <h5>Coragem</h5>
-          <p>+20% de Velocidade</p>
+        <div class="modal-body" style="border-top: 1px solid #2a2f36; padding-top: 20px; flex-direction: row;">
+             <button id="backFromPrivacyBtn" class="modal-button secondary">Voltar</button>
         </div>
-        <div class="virtue-option" data-speed="0.10" data-damage="0.10" data-reduction="0">
-          <h5>Prudência</h5>
-          <p>+10% de Dano, +10% de Velocidade</p>
-        </div>
-        <div class="virtue-option" data-speed="0" data-damage="0" data-reduction="0.20">
-          <h5>Fortaleza</h5>
-          <p>-20% de Dano Recebido</p>
-        </div>
-        <div class="virtue-option" data-speed="0.05" data-damage="0.05" data-reduction="0.05">
-          <h5>Temperança</h5>
-          <p>+5% Dano, +5% Vel., -5% Dano Recebido</p>
-        </div>
-      </div>
     </div>
+</div>
 
-    <div class="character-select-actions">
-      <button id="backToStartBtn" class="back-button">Voltar</button>
-      <button id="leaderboardButton" title="Ver top 3 pontuações">Ranking</button>
-    </div>
-  </div>
 
-  <section id="sponsors-section" aria-label="Patrocinadores" style="display: none;">
-    <h2>Patrocinadores</h2>
-    <div class="sponsors-grid">
-      <div class="sponsor-item"><div class="sponsor-preview"><img id="sponsor1Img" alt="Patrocinador 1"></div></div>
-      <div class="sponsor-item"><div class="sponsor-preview"><img id="sponsor2Img" alt="Patrocinador 2"></div></div>
-      <div class="sponsor-item"><div class="sponsor-preview"><img id="sponsor3Img" alt="Patrocinador 3"></div></div>
-    </div>
-  </section>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- SEÇÃO DE MÚSICA DE FUNDO ---
+        const backgroundMusic = document.getElementById('backgroundMusic');
+        let hasInteracted = false;
 
-  <div id="leaderboard-screen" style="display:none;">
-    <div class="leaderboard-card">
-      <h2>🏆 Top 3 Pontuações</h2>
-      <div id="leaderboard-list" class="leaderboard-list"></div>
-      <div class="leaderboard-actions">
-        <button id="leaderboardReload" class="lb-reload">Recarregar</button>
-        <button id="leaderboardBack" class="lb-back">Voltar ao Menu</button>
-      </div>
-    </div>
-  </div>
+        function playMusicOnFirstInteraction() {
+            if (!hasInteracted) {
+                backgroundMusic.play().catch(error => {
+                    // O catch é importante para o caso de o navegador ainda assim bloquear
+                    console.error("Erro ao tentar tocar a música:", error);
+                });
+                hasInteracted = true;
+                // Remove os event listeners para não tentar tocar a música novamente
+                document.body.removeEventListener('click', playMusicOnFirstInteraction);
+                document.body.removeEventListener('keydown', playMusicOnFirstInteraction);
+            }
+        }
+        
+        // Adiciona um listener para o primeiro clique em qualquer lugar
+        document.body.addEventListener('click', playMusicOnFirstInteraction, { once: true });
 
-  <div id="game-and-ui-wrapper" style="display: none;">
-    <div id="game-container">
-      <canvas id="gameCanvas"></canvas>
-      <div id="game-overlay" style="display:none;">
-        <div id="game-over-message"></div>
-        <button id="restartButton">Reiniciar Jogo</button>
-      </div>
-    </div>
-    <div id="game-ui-bottom-bar">
-      <div id="character-portrait-container">
-        <img id="portrait-img" src="" alt="Retrato do Personagem">
-      </div>
-      <div id="powers-container">
-        <div class="power-box" id="power-1">
-          <span class="power-name"></span>
-          <div class="cooldown-overlay">
-            <span class="cooldown-time"></span>
-          </div>
-        </div>
-        <div class="power-box" id="power-2">
-          <span class="power-name"></span>
-          <div class="cooldown-overlay">
-            <span class="cooldown-time"></span>
-          </div>
-        </div>
-        <div class="power-box" id="power-3">
-          <span class="power-name"></span>
-          <div class="cooldown-overlay">
-            <span class="cooldown-time"></span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  
-  <!-- CONTROLES: Joystick (esquerda) + poderes/restart (direita) -->
-  <div id="controls" style="display: none;">
-    <div class="joystick-col">
-      <div class="joystick-wrapper">
-        <div id="joystick" class="joystick-base">
-          <div class="joystick-handle"></div>
-        </div>
-      </div>
-    </div>
-    <div class="action-buttons">
-      <div class="power-buttons-group">
-        <button class="control-btn power-btn" id="power-btn-1">P1</button>
-        <button class="control-btn power-btn" id="power-btn-2">P2</button>
-        <button class="control-btn power-btn" id="power-btn-3">P3</button>
-      </div>
-      <button class="control-btn" id="control-restart-btn">⟳</button>
-    </div>
-  </div>
 
-  <audio id="gameMusic" src="https://www.dropbox.com/scl/fi/y1so2um48xj5y9ocw0av2/jogo.mp3?rlkey=jto9dgm5zmieqkp129hq2t2af&st=n4z2x1zs&raw=1" loop></audio>
-  <audio id="bg-music" src="https://www.dropbox.com/scl/fi/y1so2um48xj5y9ocw0av2/jogo.mp3?rlkey=jto9dgm5zmieqkp129hq2t2af&st=n4z2x1zs&raw=1" loop></audio>
-  <script src="script.js"></script>
+        // --- SEÇÃO DE NAVEGAÇÃO ENTRE TELAS ---
+        const initialScreen = document.getElementById('initial-screen');
+        const showPixBtn = document.getElementById('showPixBtn');
+        const showPrivacyBtn = document.getElementById('showPrivacyBtn');
+        
+        const pixModal = document.getElementById('pixModal');
+        const privacyModal = document.getElementById('privacyModal');
+
+        const backFromPixBtn = document.getElementById('backFromPixBtn');
+        const backFromPrivacyBtn = document.getElementById('backFromPrivacyBtn');
+
+        showPixBtn.addEventListener('click', () => {
+            initialScreen.style.display = 'none';
+            pixModal.style.display = 'flex';
+        });
+
+        showPrivacyBtn.addEventListener('click', () => {
+            initialScreen.style.display = 'none';
+            privacyModal.style.display = 'flex';
+        });
+
+        backFromPixBtn.addEventListener('click', () => {
+            pixModal.style.display = 'none';
+            initialScreen.style.display = 'flex';
+        });
+
+        backFromPrivacyBtn.addEventListener('click', () => {
+            privacyModal.style.display = 'none';
+            initialScreen.style.display = 'flex';
+        });
+
+        // --- SEÇÃO DO PIX (CÓDIGO ORIGINAL MANTIDO) ---
+        const API_BASE = 'https://brazilianguy.netlify.app/.netlify/functions';
+        const PIX_FORM_DATA_KEY = 'pixFormData';
+
+        const pixFormInputs = pixModal.querySelectorAll('input[id^="pix"]');
+        const pixCreateBtn = pixModal.querySelector('#pixCreateBtn');
+        const resultBox = pixModal.querySelector('#pixResult');
+        const statusEl = pixModal.querySelector('#pixLocalStatus');
+        const pixCopyBtn = pixModal.querySelector('#pixCopyBtn');
+
+        let pollingInterval;
+
+        function savePixFormToLocalStorage() {
+            const data = {};
+            pixFormInputs.forEach(input => {
+                if (input.type !== 'password') {
+                    data[input.id] = input.value;
+                }
+            });
+            localStorage.setItem(PIX_FORM_DATA_KEY, JSON.stringify(data));
+        }
+
+        function loadPixFormFromLocalStorage() {
+            try {
+                const data = JSON.parse(localStorage.getItem(PIX_FORM_DATA_KEY) || '{}');
+                if (data) {
+                    pixFormInputs.forEach(input => {
+                        if (data[input.id] && input.type !== 'password') {
+                            input.value = data[input.id];
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error("Falha ao carregar dados do formulário PIX:", error);
+            }
+        }
+
+        function stopPolling() {
+            clearInterval(pollingInterval);
+        }
+
+        function pollPaymentStatus(paymentId) {
+            stopPolling();
+            let pollingCount = 0;
+            const maxPolls = 60;
+
+            pollingInterval = setInterval(async () => {
+                pollingCount++;
+                if (pollingCount > maxPolls) {
+                    stopPolling();
+                    alert('O tempo para confirmação expirou. Se o pagamento foi efetuado, seu acesso será liberado em breve.');
+                    return;
+                }
+
+                try {
+                    const res = await fetch(`${API_BASE}/check-payment-status`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ paymentId })
+                    });
+                    if (!res.ok) return;
+                    const data = await res.json();
+                    if (data.status === 'approved') {
+                        stopPolling();
+                        alert('Cadastro e pagamento aprovados com sucesso! Você já pode usar seu novo login.');
+                    }
+                } catch (error) {
+                    console.error('Erro no polling:', error);
+                }
+            }, 5000);
+        }
+
+        pixFormInputs.forEach(input => {
+            input.addEventListener('input', savePixFormToLocalStorage);
+        });
+
+        pixCreateBtn.addEventListener('click', async () => {
+            const amountInput = pixModal.querySelector('#pixAmount');
+            const amount = Number(amountInput.value);
+            const desc = 'Cadastro de novo usuário e compra de tentativas';
+            const newUser = pixModal.querySelector('#pixUserLogin').value;
+            const newPass = pixModal.querySelector('#pixUserPassword').value;
+            const cpf = pixModal.querySelector('#pixUserCPF').value;
+            const fullName = pixModal.querySelector('#pixUserName').value;
+            const email = pixModal.querySelector('#pixUserEmail').value;
+            const address = pixModal.querySelector('#pixUserAddress').value;
+            const city = pixModal.querySelector('#pixUserCity').value;
+            const state = pixModal.querySelector('#pixUserState').value;
+            const cupom = pixModal.querySelector('#pixUserCupom').value.trim();
+
+            if (!Number.isInteger(amount) || amount < 2) {
+                alert('O valor mínimo do PIX é de R$ 2 (apenas números inteiros).');
+                return;
+            }
+
+            if (!newUser || !newPass || !cpf || !fullName || !email || !address || !city || !state) {
+                alert('Por favor, preencha todos os campos para o cadastro.');
+                return;
+            }
+
+            resultBox.style.display = 'none';
+            pixCreateBtn.disabled = true;
+            pixCreateBtn.textContent = 'Aguarde...';
+            
+            try {
+                if (cupom) {
+                    statusEl.textContent = 'Validando cupom…';
+                    const validationResponse = await fetch(`${API_BASE}/validate-coupon`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ cupom })
+                    });
+                    const validationResult = await validationResponse.json();
+                    if (!validationResponse.ok) {
+                        throw new Error(validationResult.message || 'Falha ao validar o cupom.');
+                    }
+                }
+
+                statusEl.textContent = 'Gerando QR Code…';
+                
+                const external_reference = JSON.stringify({
+                    orderId: `order_${Date.now()}_${newUser}`,
+                    newUser, newPass, cupom, fullName, cpf, email, address, city, state
+                });
+                
+                const paymentData = {
+                    transaction_amount: amount,
+                    description: desc,
+                    payer: {
+                        first_name: fullName.split(' ')[0],
+                        last_name: fullName.split(' ').slice(1).join(' ') || fullName.split(' ')[0],
+                        email: email,
+                        identification: {
+                            type: "CPF",
+                            number: cpf.replace(/\D/g, '')
+                        },
+                        address: {
+                            street_name: address,
+                            city: city,
+                            federal_unit: state.toUpperCase()
+                        }
+                    },
+                    external_reference
+                };
+
+                const data = await fetch(`${API_BASE}/create-pix-payment`, {
+                    method: 'POST',
+                    headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify(paymentData)
+                }).then(res => {
+                    if (!res.ok) { return res.json().then(err => { throw new Error(JSON.stringify(err.details || err)); }); }
+                    return res.json();
+                });
+
+                const tx = data.point_of_interaction?.transaction_data;
+                if (!tx || !tx.qr_code || !tx.qr_code_base64) { throw new Error('Retorno inválido da API de pagamento.'); }
+                
+                pixModal.querySelector('#pixQrImg').src = `data:image/png;base64,${tx.qr_code_base64}`;
+                pixModal.querySelector('#pixCopiaCola').value = tx.qr_code;
+                resultBox.style.display = 'block';
+                statusEl.textContent = 'Aguardando pagamento…';
+
+                pollPaymentStatus(data.id);
+
+                pixCopyBtn.onclick = async () => {
+                    try { await navigator.clipboard.writeText(tx.qr_code); statusEl.textContent = 'Código copiado!'; setTimeout(()=> statusEl.textContent = 'Aguardando pagamento…', 2500); }
+                    catch { statusEl.textContent = 'Falha ao copiar.'; }
+                };
+
+            } catch (err) {
+                console.error('Falha no processo de PIX:', err);
+                alert(`Ocorreu um erro: ${err.message}`);
+                statusEl.textContent = '';
+            } finally {
+                pixCreateBtn.disabled = false;
+                pixCreateBtn.textContent = 'Gerar QR Code';
+            }
+        });
+
+        loadPixFormFromLocalStorage();
+    });
+</script>
+
 </body>
 </html>
