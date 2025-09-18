@@ -27,7 +27,6 @@ exports.handler = async (event) => {
             const paymentDetails = paymentResponse.data;
 
             if (paymentDetails.status === 'approved' && paymentDetails.external_reference) {
-                // 1. Extrai TODOS os dados do usuário enviados a partir do formulário PIX
                 const {
                     newUser, newPass, cupom, fullName, cpf, email, address, city, state
                 } = JSON.parse(paymentDetails.external_reference);
@@ -55,7 +54,6 @@ exports.handler = async (event) => {
                     return { statusCode: 200, body: 'Usuário já cadastrado.' };
                 }
 
-                // 2. Insere o novo usuário COM TODOS OS DADOS na tabela 'usuarios'
                 const { error: insertUserError } = await supabase
                     .from('usuarios')
                     .insert([
@@ -63,7 +61,6 @@ exports.handler = async (event) => {
                             login: newUser,
                             senha: newPass,
                             tentativas: transactionAmount,
-                            // Campos adicionais preenchidos a partir do formulário
                             nome_completo: fullName,
                             cpf: cpf ? cpf.replace(/\D/g, '') : null,
                             email: email,
@@ -74,20 +71,22 @@ exports.handler = async (event) => {
                     ]);
 
                 if (insertUserError) {
-                    // ALTERAÇÃO: Captura o erro de chave duplicada (23505) que causa o problema.
-                    // Isso pode acontecer em uma condição de corrida. Se o erro for esse,
-                    // consideramos um sucesso, pois o usuário já foi inserido por outra chamada.
+                    // ALTERAÇÃO DEFINITIVA: Se ocorrer um conflito de inserção (23505),
+                    // significa que outra chamada está criando o usuário.
+                    // A melhor abordagem é parar esta execução e deixar a outra terminar.
                     if (insertUserError.code === '23505') {
-                        console.warn(`Conflito de inserção para o usuário ${newUser} (código 23505), tratando como sucesso pois o usuário já existe.`);
+                        console.warn(`Conflito de inserção para ${newUser} (23505). Outra notificação já está em processo. Esta execução será abortada.`);
+                        // Retorna 200 OK para que o Mercado Pago não tente reenviar a notificação.
+                        return { statusCode: 200, body: 'Notificação duplicada durante processamento.' };
                     } else {
-                        // Se for qualquer outro erro, ele será lançado e capturado pelo bloco catch principal.
+                        // Se for outro erro, lança para ser capturado pelo catch geral.
                         throw insertUserError;
                     }
-                } else {
-                    console.log(`Usuário ${newUser} criado com sucesso com todos os dados.`);
                 }
                 
-                // 3. (NOVO) Insere os dados na tabela 'cupons_aplicados'
+                // Apenas a primeira notificação (a que teve sucesso na inserção) continuará a partir daqui.
+                console.log(`Usuário ${newUser} criado com sucesso com todos os dados.`);
+
                 const { error: insertCouponError } = await supabase
                     .from('cupons_aplicados')
                     .insert([
