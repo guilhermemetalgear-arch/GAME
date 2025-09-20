@@ -350,6 +350,25 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
+
+        // --- NOVA FUNÇÃO PARA VALIDAR CPF ---
+        // Esta função verifica o comprimento, dígitos repetidos e os dígitos verificadores do CPF.
+        function validaCPF(cpf) {
+            cpf = cpf.replace(/[^\d]+/g, '');
+            if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) return false;
+            let soma = 0, resto;
+            for (let i = 1; i <= 9; i++) soma += parseInt(cpf.substring(i-1, i)) * (11 - i);
+            resto = (soma * 10) % 11;
+            if ((resto === 10) || (resto === 11)) resto = 0;
+            if (resto !== parseInt(cpf.substring(9, 10))) return false;
+            soma = 0;
+            for (let i = 1; i <= 10; i++) soma += parseInt(cpf.substring(i-1, i)) * (12 - i);
+            resto = (soma * 10) % 11;
+            if ((resto === 10) || (resto === 11)) resto = 0;
+            if (resto !== parseInt(cpf.substring(10, 11))) return false;
+            return true;
+        }
+
         // --- SEÇÃO DE MÚSICA DE FUNDO ---
         const backgroundMusic = document.getElementById('backgroundMusic');
         let hasInteracted = false;
@@ -357,17 +376,14 @@
         function playMusicOnFirstInteraction() {
             if (!hasInteracted) {
                 backgroundMusic.play().catch(error => {
-                    // O catch é importante para o caso de o navegador ainda assim bloquear
                     console.error("Erro ao tentar tocar a música:", error);
                 });
                 hasInteracted = true;
-                // Remove os event listeners para não tentar tocar a música novamente
                 document.body.removeEventListener('click', playMusicOnFirstInteraction);
                 document.body.removeEventListener('keydown', playMusicOnFirstInteraction);
             }
         }
         
-        // Adiciona um listener para o primeiro clique em qualquer lugar
         document.body.addEventListener('click', playMusicOnFirstInteraction, { once: true });
 
 
@@ -402,7 +418,7 @@
             initialScreen.style.display = 'flex';
         });
 
-        // --- SEÇÃO DO PIX (CÓDIGO ORIGINAL MANTIDO) ---
+        // --- SEÇÃO DO PIX (CÓDIGO ORIGINAL MANTIDO COM ADIÇÃO DA VALIDAÇÃO) ---
         const API_BASE = 'https://brazilianguy.netlify.app/.netlify/functions';
         const PIX_FORM_DATA_KEY = 'pixFormData';
 
@@ -496,8 +512,14 @@
                 alert('O valor mínimo do PIX é de R$ 2 (apenas números inteiros).');
                 return;
             }
+            
+            // ADIÇÃO: Verificação do CPF usando a nova função
+            if (!validaCPF(cpf)) {
+                alert('CPF inválido. Por favor, verifique o número digitado.');
+                return;
+            }
 
-            if (!newUser || !newPass || !cpf || !fullName || !email || !address || !city || !state) {
+            if (!newUser || !newPass || !fullName || !email || !address || !city || !state) {
                 alert('Por favor, preencha todos os campos para o cadastro.');
                 return;
             }
