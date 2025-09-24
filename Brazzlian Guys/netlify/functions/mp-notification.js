@@ -50,7 +50,8 @@ exports.handler = async (event) => {
                         return { statusCode: 200, body: 'Erro ao processar external_reference.' };
                     }
 
-                    const { newUser, newPass } = externalRefData;
+                    // ATUALIZAÇÃO: Extrai 'age' dos dados
+                    const { newUser, newPass, age } = externalRefData;
                     const transactionAmount = Math.floor(paymentDetails.transaction_amount);
 
                     if (!newUser || !newPass || transactionAmount < 1) {
@@ -68,6 +69,7 @@ exports.handler = async (event) => {
                             nome_completo: externalRefData.fullName,
                             cpf: externalRefData.cpf ? externalRefData.cpf.replace(/\D/g, '') : null,
                             email: externalRefData.email,
+                            idade: age, // ADICIONADO CAMPO IDADE
                             endereco: externalRefData.address,
                             cidade: externalRefData.city,
                             estado_uf: externalRefData.state ? externalRefData.state.toUpperCase() : null

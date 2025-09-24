@@ -44,10 +44,11 @@ exports.handler = async (event) => {
             return { statusCode: 400, headers, body: JSON.stringify({ error: 'Dados de referência externa inválidos ou malformatados.' }) };
         }
 
-        const { newUser, fullName, email, cpf } = externalRefData;
+        // ATUALIZAÇÃO: Adiciona 'age' à desestruturação e validação
+        const { newUser, fullName, email, cpf, age } = externalRefData;
         
-        if (!newUser || !fullName || !email || !cpf) {
-            return { statusCode: 400, headers, body: JSON.stringify({ error: 'Login, nome completo, email e CPF são obrigatórios para o cadastro.' }) };
+        if (!newUser || !fullName || !email || !cpf || !age) {
+            return { statusCode: 400, headers, body: JSON.stringify({ error: 'Login, nome completo, email, CPF e idade são obrigatórios para o cadastro.' }) };
         }
         
         const cleanedCpf = cpf.replace(/\D/g, ''); // Remove caracteres não numéricos do CPF
