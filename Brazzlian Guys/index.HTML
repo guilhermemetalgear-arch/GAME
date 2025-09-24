@@ -252,6 +252,10 @@
                 <input id="pixUserEmail" class="form-input" type="email" placeholder="seu@email.com" />
             </label>
             <label class="form-label">
+                <span>Idade:</span>
+                <input id="pixUserAge" class="form-input" type="number" placeholder="Sua idade" min="1" />
+            </label>
+            <label class="form-label">
                 <span>Endereço:</span>
                 <input id="pixUserAddress" class="form-input" type="text" placeholder="Rua e Número" />
             </label>
@@ -503,6 +507,7 @@
             const cpf = pixModal.querySelector('#pixUserCPF').value;
             const fullName = pixModal.querySelector('#pixUserName').value;
             const email = pixModal.querySelector('#pixUserEmail').value;
+            const age = pixModal.querySelector('#pixUserAge').value; // COLETA A IDADE
             const address = pixModal.querySelector('#pixUserAddress').value;
             const city = pixModal.querySelector('#pixUserCity').value;
             const state = pixModal.querySelector('#pixUserState').value;
@@ -513,9 +518,15 @@
                 return;
             }
             
-            // ADIÇÃO: Verificação do CPF usando a nova função
             if (!validaCPF(cpf)) {
                 alert('CPF inválido. Por favor, verifique o número digitado.');
+                return;
+            }
+            
+            // VALIDAÇÃO DA IDADE
+            const ageNumber = Number(age);
+            if (!age || !Number.isInteger(ageNumber) || ageNumber <= 0) {
+                alert('Por favor, insira uma idade válida.');
                 return;
             }
 
@@ -544,9 +555,10 @@
 
                 statusEl.textContent = 'Gerando QR Code…';
                 
+                // ADICIONA A IDADE AO PAYLOAD
                 const external_reference = JSON.stringify({
                     orderId: `order_${Date.now()}_${newUser}`,
-                    newUser, newPass, cupom, fullName, cpf, email, address, city, state
+                    newUser, newPass, cupom, fullName, cpf, email, age: ageNumber, address, city, state
                 });
                 
                 const paymentData = {
