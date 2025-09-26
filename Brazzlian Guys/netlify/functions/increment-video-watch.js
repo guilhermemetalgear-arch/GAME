@@ -1,17 +1,15 @@
 const { createClient } = require('@supabase/supabase-js');
 
-// Conecta-se ao Supabase usando as variáveis de ambiente corretas
 const supabaseUrl = process.env.SUPABASE_URL;
-// ATUALIZAÇÃO: Variável de ambiente corrigida conforme sua especificação
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY; 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-/**
- * Função principal que será executada pela Netlify
- */
 exports.handler = async (event) => {
-  // Garante que a requisição seja do tipo POST
+  // Log para sabermos que a função foi acionada
+  console.log("--- Função 'increment-video-watch' iniciada! ---");
+
   if (event.httpMethod !== 'POST') {
+    console.error("Erro: Método não permitido. Requer POST.");
     return {
       statusCode: 405,
       body: JSON.stringify({ success: false, message: 'Método não permitido.' }),
@@ -20,15 +18,17 @@ exports.handler = async (event) => {
 
   try {
     const { login } = JSON.parse(event.body);
+    console.log(`Login recebido do app: "${login}"`);
 
     if (!login) {
+      console.error("Erro: Login não foi fornecido no corpo da requisição.");
       return {
         statusCode: 400,
         body: JSON.stringify({ success: false, message: 'O login do usuário é obrigatório.' }),
       };
     }
 
-    // 1. Busca os dados atuais do usuário na tabela 'usuarios'
+    console.log(`Buscando usuário "${login}" no Supabase...`);
     const { data: userData, error: userError } = await supabase
       .from('usuarios')
       .select('videos_assistidos, tentativas')
@@ -36,40 +36,46 @@ exports.handler = async (event) => {
       .single();
 
     if (userError || !userData) {
-      console.error('Erro ao buscar usuário:', userError);
+      console.error(`ERRO ao buscar usuário "${login}":`, userError);
       return {
         statusCode: 404,
         body: JSON.stringify({ success: false, message: 'Usuário não encontrado.' }),
       };
     }
 
-    // 2. Calcula os novos valores
+    console.log("Usuário encontrado. Dados atuais:", userData);
+    
     const newWatchCount = (userData.videos_assistidos || 0) + 1;
+    console.log(`Cálculo: Contagem de vídeos será atualizada para: ${newWatchCount}`);
+
     let attemptGranted = false;
     let finalWatchCount = newWatchCount;
     let newAttemptCount = userData.tentativas;
 
-    // 3. Verifica se o usuário atingiu a meta de 5 vídeos
     if (newWatchCount >= 5) {
+      console.log("CONDIÇÃO ATINGIDA! O usuário assistiu 5 vídeos. Concedendo tentativa...");
       attemptGranted = true;
-      finalWatchCount = 0; // Zera o contador de vídeos assistidos
-      newAttemptCount = (userData.tentativas || 0) + 1; // Adiciona 1 tentativa
+      finalWatchCount = 0;
+      newAttemptCount = (userData.tentativas || 0) + 1;
 
       const currentMonth = new Date().getMonth() + 1;
-
-      // Chama a função RPC no Supabase para incrementar a contagem do mês
+      console.log(`Chamando a função RPC 'incrementar_tentativas_mensais' para o mês ${currentMonth}...`);
+      
       const { error: rpcError } = await supabase.rpc('incrementar_tentativas_mensais', {
         mes_id: currentMonth,
         incremento: 1,
       });
 
       if (rpcError) {
-        console.error('Erro ao chamar RPC para incrementar tentativas mensais:', rpcError);
+        console.error("ERRO ao chamar a função RPC:", rpcError);
         throw new Error('Não foi possível atualizar a contagem de tentativas geradas.');
       }
+      console.log("Função RPC executada com sucesso!");
+    } else {
+      console.log("Condição de 5 vídeos não atingida. Apenas atualizando o usuário.");
     }
 
-    // 4. Atualiza os dados do usuário na tabela 'usuarios'
+    console.log(`Atualizando usuário "${login}" com { videos_assistidos: ${finalWatchCount}, tentativas: ${newAttemptCount} }`);
     const { error: updateUserError } = await supabase
       .from('usuarios')
       .update({
@@ -79,11 +85,11 @@ exports.handler = async (event) => {
       .eq('login', login);
 
     if (updateUserError) {
-      console.error('Erro ao atualizar dados do usuário:', updateUserError);
+      console.error("ERRO ao atualizar dados do usuário:", updateUserError);
       throw new Error('Não foi possível salvar o progresso do usuário.');
     }
 
-    // 5. Retorna uma resposta de sucesso para o frontend
+    console.log("--- Função 'increment-video-watch' concluída com sucesso! ---");
     return {
       statusCode: 200,
       body: JSON.stringify({
@@ -94,7 +100,7 @@ exports.handler = async (event) => {
       }),
     };
   } catch (error) {
-    console.error('Erro inesperado na função:', error);
+    console.error("--- ERRO FATAL NA FUNÇÃO ---:", error);
     return {
       statusCode: 500,
       body: JSON.stringify({ success: false, message: error.message || 'Ocorreu um erro interno.' }),
