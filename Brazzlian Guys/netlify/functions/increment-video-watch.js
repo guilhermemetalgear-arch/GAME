@@ -5,15 +5,40 @@ const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 exports.handler = async (event) => {
+  // Cabeçalhos de CORS para permitir requisições do seu app
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': '*', // Ou substitua '*' pelo domínio do seu app para mais segurança
+    'Access-Control-Allow-Headers': 'Content-Type, X-Firebase-AppCheck',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  };
+
+  // Responde imediatamente a requisições OPTIONS (pre-flight)
+  if (event.httpMethod === 'OPTIONS') {
+    return {
+      statusCode: 200,
+      headers: corsHeaders,
+      body: JSON.stringify({ message: 'CORS pre-flight successful' }),
+    };
+  }
+
+  // Função helper para criar respostas com os headers de CORS
+  const createResponse = (statusCode, body) => {
+    return {
+      statusCode,
+      headers: {
+        ...corsHeaders,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    };
+  };
+  
   // Log para sabermos que a função foi acionada
   console.log("--- Função 'increment-video-watch' iniciada! ---");
 
   if (event.httpMethod !== 'POST') {
     console.error("Erro: Método não permitido. Requer POST.");
-    return {
-      statusCode: 405,
-      body: JSON.stringify({ success: false, message: 'Método não permitido.' }),
-    };
+    return createResponse(405, { success: false, message: 'Método não permitido.' });
   }
 
   try {
@@ -22,10 +47,7 @@ exports.handler = async (event) => {
 
     if (!login) {
       console.error("Erro: Login não foi fornecido no corpo da requisição.");
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ success: false, message: 'O login do usuário é obrigatório.' }),
-      };
+      return createResponse(400, { success: false, message: 'O login do usuário é obrigatório.' });
     }
 
     console.log(`Buscando usuário "${login}" no Supabase...`);
@@ -37,10 +59,7 @@ exports.handler = async (event) => {
 
     if (userError || !userData) {
       console.error(`ERRO ao buscar usuário "${login}":`, userError);
-      return {
-        statusCode: 404,
-        body: JSON.stringify({ success: false, message: 'Usuário não encontrado.' }),
-      };
+      return createResponse(404, { success: false, message: 'Usuário não encontrado.' });
     }
 
     console.log("Usuário encontrado. Dados atuais:", userData);
@@ -90,20 +109,15 @@ exports.handler = async (event) => {
     }
 
     console.log("--- Função 'increment-video-watch' concluída com sucesso! ---");
-    return {
-      statusCode: 200,
-      body: JSON.stringify({
+    return createResponse(200, {
         success: true,
         message: attemptGranted ? 'Tentativa concedida com sucesso!' : 'Contagem de vídeo incrementada.',
         attemptGranted: attemptGranted,
         newWatchCount: finalWatchCount,
-      }),
-    };
+    });
+
   } catch (error) {
     console.error("--- ERRO FATAL NA FUNÇÃO ---:", error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ success: false, message: error.message || 'Ocorreu um erro interno.' }),
-    };
+    return createResponse(500, { success: false, message: error.message || 'Ocorreu um erro interno.' });
   }
 };
