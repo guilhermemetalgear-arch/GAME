@@ -77,19 +77,19 @@ exports.handler = async (event) => {
       finalWatchCount = 0;
       newAttemptCount = (userData.tentativas || 0) + 1;
 
-      // ---- ALTERAÇÃO INICIA AQUI ----
       const now = new Date();
       const currentMonth = now.getMonth() + 1; // getMonth() é 0-11, então +1
       const currentYear = now.getFullYear();
 
       console.log(`Chamando a função RPC 'incrementar_tentativas_mensais' para o mês ${currentMonth} e ano ${currentYear}...`);
       
+      // ---- ALTERAÇÃO DOS PARÂMETROS PARA CORRESPONDER AO BANCO DE DADOS ----
       const { error: rpcError } = await supabase.rpc('incrementar_tentativas_mensais', {
-        mes: currentMonth,        // Parâmetro do mês atualizado
-        ano: currentYear,         // NOVO PARÂMETRO: ano
-        incremento: 1,
+        mes_param: currentMonth,
+        ano_param: currentYear,
+        incremento_param: 1,
       });
-      // ---- ALTERAÇÃO TERMINA AQUI ----
+      // ---- FIM DA ALTERAÇÃO ----
 
       if (rpcError) {
         console.error("ERRO ao chamar a função RPC:", rpcError);
