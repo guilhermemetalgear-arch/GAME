@@ -7,7 +7,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 exports.handler = async (event) => {
   // Cabeçalhos de CORS para permitir requisições do seu app
   const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Origin': '*', // Ou substitua '*' pelo domínio do seu app para mais segurança
     'Access-Control-Allow-Headers': 'Content-Type, X-Firebase-AppCheck',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
   };
@@ -33,6 +33,7 @@ exports.handler = async (event) => {
     };
   };
   
+  // Log para sabermos que a função foi acionada
   console.log("--- Função 'increment-video-watch' iniciada! ---");
 
   if (event.httpMethod !== 'POST') {
@@ -76,19 +77,19 @@ exports.handler = async (event) => {
       finalWatchCount = 0;
       newAttemptCount = (userData.tentativas || 0) + 1;
 
-      // ---- INÍCIO DA ALTERAÇÃO ----
-      const currentDate = new Date();
-      const currentMonth = currentDate.getMonth() + 1; // Mês (1-12)
-      const currentYear = currentDate.getFullYear();  // Ano (ex: 2025)
+      // ---- ALTERAÇÃO INICIA AQUI ----
+      const now = new Date();
+      const currentMonth = now.getMonth() + 1; // getMonth() é 0-11, então +1
+      const currentYear = now.getFullYear();
 
       console.log(`Chamando a função RPC 'incrementar_tentativas_mensais' para o mês ${currentMonth} e ano ${currentYear}...`);
       
       const { error: rpcError } = await supabase.rpc('incrementar_tentativas_mensais', {
-        p_mes_id: currentMonth,
-        p_ano: currentYear, // Enviando o ano para a função
-        p_incremento: 1,
+        mes: currentMonth,        // Parâmetro do mês atualizado
+        ano: currentYear,         // NOVO PARÂMETRO: ano
+        incremento: 1,
       });
-      // ---- FIM DA ALTERAÇÃO ----
+      // ---- ALTERAÇÃO TERMINA AQUI ----
 
       if (rpcError) {
         console.error("ERRO ao chamar a função RPC:", rpcError);
