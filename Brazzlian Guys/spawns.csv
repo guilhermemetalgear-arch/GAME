@@ -1,7 +1,0 @@
-spawn_side,spawn_axis,exit_side,exit_axis,enemy_type,spawn_time
-esquerda,20,direita,20,0,0
-topo,50,base,50,1,2.0
-direita,80,esquerda,30,4,3.5
-base,10,topo,90,2,5.0
-esquerda,60,direita,60,8,6.2
-topo,15,base,15,3,7.5
