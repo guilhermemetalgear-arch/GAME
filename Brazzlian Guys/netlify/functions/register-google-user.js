@@ -29,22 +29,36 @@ exports.handler = async (event) => {
             return { statusCode: 400, headers, body: JSON.stringify({ success: false, message: 'Login e email são obrigatórios' }) };
         }
 
-        // "Upsert" - Insere um novo usuário ou atualiza o 'login' se o 'email' já existir.
-        // Isso atende ao requisito de "somente se for um usuario que nao conste na lista".
-        // Garanta que a coluna 'email' na sua tabela 'usuarios' seja UNIQUE.
+        // --- INÍCIO DA MODIFICAÇÃO DESTA RODADA ---
+        // Adicionado um valor padrão para 'senha' para evitar o erro NOT-NULL.
+        // Se o email já existir, o 'login' será atualizado e a 'senha' também
+        // será sobrescrita com este placeholder.
+        const userData = {
+            login: login,
+            email: email,
+            senha: 'google_user' // Valor padrão para satisfazer a restrição
+        };
+        // --- FIM DA MODIFICAÇÃO ---
+
         const { data, error } = await supabase
             .from('usuarios')
             .upsert(
-                { login: login, email: email },
+                userData, // Usa o novo objeto com a senha
                 { 
                   onConflict: 'email', // A coluna que deve ser checada para conflito
-                  ignoreDuplicates: false // 'false' garante que o 'login' seja atualizado se o email existir
+                  ignoreDuplicates: false // Garante que o 'login' seja atualizado se o email existir
                 }
             )
-            .select(); // Retorna o registro inserido/atualizado
+            .select();
 
         if (error) {
             console.error('Erro no upsert do Supabase:', error);
+            // Log do erro original para depuração
+            console.error('Detalhes do Erro Supabase:', {
+                code: error.code,
+                details: error.details,
+                message: error.message
+            });
             throw error;
         }
 
