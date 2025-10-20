@@ -17,7 +17,7 @@ exports.handler = async (event) => {
     if (event.httpMethod === 'OPTIONS') {
         return { statusCode: 200, headers, body: '' };
     }
-    
+
     if (event.httpMethod !== 'POST') {
         return { statusCode: 405, headers, body: JSON.stringify({ success: false, message: 'Method Not Allowed' }) };
     }
@@ -30,35 +30,35 @@ exports.handler = async (event) => {
         }
 
         // --- INÍCIO DA MODIFICAÇÃO DESTA RODADA ---
-        // Adicionado um valor padrão para 'senha' para evitar o erro NOT-NULL.
-        // Se o email já existir, o 'login' será atualizado e a 'senha' também
-        // será sobrescrita com este placeholder.
+        // Adicionado pontos_virtude: 0 para garantir que novos usuários comecem com 0
         const userData = {
             login: login,
             email: email,
-            senha: 'google_user' // Valor padrão para satisfazer a restrição
+            senha: 'google_user', // Placeholder for NOT NULL constraint
+            pontos_virtude: 0     // Default value for new users
         };
         // --- FIM DA MODIFICAÇÃO ---
 
         const { data, error } = await supabase
             .from('usuarios')
             .upsert(
-                userData, // Usa o novo objeto com a senha
-                { 
-                  onConflict: 'email', // A coluna que deve ser checada para conflito
-                  ignoreDuplicates: false // Garante que o 'login' seja atualizado se o email existir
+                userData,
+                {
+                  onConflict: 'email', // Check conflict on email
+                  // IMPORTANT: Supabase upsert by default only inserts if the row doesn't exist based on PK/constraint.
+                  // To *update* existing rows based on the onConflict column, you need V11+ of supabase-js and specific syntax,
+                  // OR handle it as select -> insert/update.
+                  // HOWEVER, the default behavior *might* be what you want if 'email' is NOT your primary key but has a UNIQUE constraint.
+                  // If 'email' has a UNIQUE constraint, this *will* update the 'login' and 'senha' (and 'pontos_virtude' if specified here).
+                  // Assuming 'email' has a UNIQUE constraint:
+                  ignoreDuplicates: false // Ensures existing rows matching 'email' are updated
                 }
             )
             .select();
 
         if (error) {
             console.error('Erro no upsert do Supabase:', error);
-            // Log do erro original para depuração
-            console.error('Detalhes do Erro Supabase:', {
-                code: error.code,
-                details: error.details,
-                message: error.message
-            });
+            console.error('Detalhes do Erro Supabase:', { code: error.code, details: error.details, message: error.message });
             throw error;
         }
 

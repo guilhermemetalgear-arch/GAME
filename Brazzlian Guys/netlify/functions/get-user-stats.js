@@ -9,45 +9,47 @@ const supabase = createClient(
 exports.handler = async (event) => {
     const headers = {
         'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Allow-Headers': 'Content-Type, X-Firebase-AppCheck', // Include AppCheck
         'Access-Control-Allow-Methods': 'POST, OPTIONS'
     };
 
     if (event.httpMethod === 'OPTIONS') {
         return { statusCode: 200, headers, body: '' };
     }
-    
+
     if (event.httpMethod !== 'POST') {
-        return { statusCode: 405, headers, body: 'Method Not Allowed' };
+        return { statusCode: 405, headers, body: JSON.stringify({ success: false, message: 'Method Not Allowed' }) };
     }
 
     try {
         const { login } = JSON.parse(event.body);
 
         if (!login) {
-            return { statusCode: 400, headers, body: JSON.stringify({ error: 'Login é obrigatório' }) };
+            return { statusCode: 400, headers, body: JSON.stringify({ success: false, message: 'Login é obrigatório' }) };
         }
 
-        // Busca no Supabase (tabela 'top_scores') e soma todos os 'points' do usuário
-        // ATENÇÃO: Verifique se o nome da sua tabela de pontuação é 'top_scores'
-        // e as colunas são 'points' e 'user_name'.
+        // --- INÍCIO DA MODIFICAÇÃO ---
+        // Busca o usuário na tabela 'usuarios' e pega a coluna 'pontos_virtude'
         const { data, error } = await supabase
-            .from('top_scores')
-            .select('points')
-            .eq('user_name', login);
+            .from('usuarios')
+            .select('pontos_virtude')
+            .eq('login', login)
+            .maybeSingle(); // Retorna um único objeto ou null, não um array
 
         if (error) {
-            console.error('Erro ao buscar scores do usuário:', error);
+            console.error('Erro ao buscar usuário no Supabase:', error);
             throw error;
         }
 
-        // Soma todos os pontos encontrados
-        const totalScore = data.reduce((acc, currentRow) => acc + (currentRow.points || 0), 0);
+        // Se o usuário não for encontrado (data é null) ou não tiver pontos, retorna 0
+        const totalScore = data ? (data.pontos_virtude || 0) : 0;
+        // --- FIM DA MODIFICAÇÃO ---
+
 
         return { statusCode: 200, headers, body: JSON.stringify({ success: true, totalScore: totalScore }) };
 
     } catch (err) {
         console.error('Erro interno na função get-user-stats:', err);
-        return { statusCode: 500, headers, body: JSON.stringify({ error: 'Erro interno no servidor' }) };
+        return { statusCode: 500, headers, body: JSON.stringify({ success: false, message: 'Erro interno no servidor' }) };
     }
 };
